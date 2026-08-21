@@ -1,0 +1,47 @@
+# Dependencias
+/vendor/
+node_modules/
+
+# Variables de entorno
+.env
+.env.local
+.env.*.local
+/.env.radio-miraflores
+
+# Base de datos
+database.sqlite
+*.sql
+*.bak
+
+# Caché y logs
+/.cache/
+*.log
+/.security.log
+/.rate_limit_login
+
+# Uploads de usuarios
+/uploads/*
+!/uploads/.gitkeep
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Migración (solo local)
+/admin/migrate.php
+
+# Composer
+composer.phar
+
+# Build
+/build/
+/dist/

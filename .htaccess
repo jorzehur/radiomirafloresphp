@@ -1,0 +1,98 @@
+# Configuración de caché y optimización para hosting compartido
+
+# Activar mod_rewrite
+RewriteEngine On
+
+# Redirigir a HTTPS (descomentar si tienes SSL)
+# RewriteCond %{HTTPS} off
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Headers de seguridad
+<IfModule mod_headers.c>
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+    Header set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+    Header unset X-Powered-By
+    Header unset Server
+</IfModule>
+
+# Caché del navegador para archivos estáticos
+<IfModule mod_expires.c>
+    ExpiresActive On
+    
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/gif "access plus 1 month"
+    ExpiresByType image/webp "access plus 1 month"
+    ExpiresByType image/svg+xml "access plus 1 month"
+    ExpiresByType image/x-icon "access plus 1 year"
+    
+    ExpiresByType text/css "access plus 1 week"
+    ExpiresByType application/javascript "access plus 1 week"
+    ExpiresByType text/javascript "access plus 1 week"
+    
+    ExpiresByType font/woff2 "access plus 1 month"
+    ExpiresByType font/woff "access plus 1 month"
+    ExpiresByType font/ttf "access plus 1 month"
+    
+    ExpiresByType text/html "access plus 5 minutes"
+</IfModule>
+
+# Compresión GZIP
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE text/javascript
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/json
+    AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+# Proteger archivos sensibles
+<FilesMatch "\.(env|log|sql|sqlite|bak|ini|conf|cache)$">
+    <IfVersion < 2.4>
+        Order allow,deny
+        Deny from all
+    </IfVersion>
+    <IfVersion >= 2.4>
+        Require all denied
+    </IfVersion>
+</FilesMatch>
+
+# Proteger archivos específicos
+<Files "config.php">
+    <IfVersion < 2.4>
+        Order allow,deny
+        Deny from all
+    </IfVersion>
+    <IfVersion >= 2.4>
+        Require all denied
+    </IfVersion>
+</Files>
+
+# Proteger archivos ocultos (.env, .htaccess, etc)
+<FilesMatch "^\.">
+    <IfVersion < 2.4>
+        Order allow,deny
+        Deny from all
+    </IfVersion>
+    <IfVersion >= 2.4>
+        Require all denied
+    </IfVersion>
+</FilesMatch>
+
+# Optimizar imágenes (si el hosting lo soporta)
+<IfModule mod_pagespeed_speed>
+    ModPagespeed on
+    ModPagespeedEnableFilters rewrite_images,combine_css,combine_javascript
+</IfModule>
+
+# PHP optimizations
+<IfModule mod_php7.c>
+    php_value memory_limit 64M
+    php_value max_execution_time 30
+    php_value upload_max_filesize 10M
+    php_value post_max_size 10M
+</IfModule>
