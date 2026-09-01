@@ -1,8 +1,9 @@
 <?php
 // ============================================================
-//  logout.php - Cerrar sesión
+//  pie.php - Cierre del layout del panel admin
 // ============================================================
-require_once __DIR__ . '/../includes/auth.php';
-
-cerrar_sesion();
-redirigir('login.php');
+?>
+    </main>
+</div>
+</body>
+</html>

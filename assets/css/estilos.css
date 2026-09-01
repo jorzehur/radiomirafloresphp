@@ -1,0 +1,675 @@
+/* ============================================================
+   Radio Miraflores - Estilos principales
+   Fondo negro, hero rojo, diseño ligero y responsive
+   ============================================================ */
+
+:root {
+    --negro: #0b0b0b;
+    --negro-suave: #151515;
+    --blanco: #ffffff;
+    --gris-texto: #c9c9c9;
+    --color-hero: #d32f2f;
+    --color-acento: #d32f2f;
+    --radio: 10px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    * {
+        transition: none !important;
+    }
+}
+
+body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    background: var(--negro);
+    color: var(--blanco);
+    line-height: 1.6;
+}
+
+img {
+    max-width: 100%;
+    display: block;
+}
+
+a {
+    color: inherit;
+}
+
+a:focus-visible,
+button:focus-visible {
+    outline: 2px solid var(--color-acento);
+    outline-offset: 2px;
+}
+
+.contenedor {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.contenedor--estrecho {
+    max-width: 760px;
+}
+
+/* ---------------- Barra de navegación ---------------- */
+.barra-navegacion {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #000;
+    border-bottom: 1px solid #222;
+}
+
+.barra-navegacion__fila {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: #fff;
+}
+
+.logo img {
+    height: 42px;
+    width: auto;
+}
+
+.logo__texto {
+    color: #fff;
+}
+
+.menu {
+    display: flex;
+    gap: 4px;
+}
+
+.menu a {
+    color: #ddd;
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    transition: background 0.15s, color 0.15s;
+}
+
+.menu a:hover {
+    background: #222;
+    color: #fff;
+}
+
+.menu-boton {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    padding: 8px;
+}
+
+.menu-boton span {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background: #fff;
+}
+
+/* ---------------- Hero ---------------- */
+.hero {
+    position: relative;
+    overflow: hidden;
+    background: var(--color-hero);
+    min-height: calc(100vh - 64px);
+    display: flex;
+    align-items: center;
+    padding: 80px 0;
+    text-align: left;
+}
+
+.hero__foto {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(58%, 760px);
+    background-size: cover;
+    background-position: center 22%;
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 45%);
+    mask-image: linear-gradient(to right, transparent 0%, #000 45%);
+    pointer-events: none;
+}
+
+.hero__contenido {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.hero__logo {
+    max-height: 120px;
+    width: auto;
+    max-width: 240px;
+}
+
+.hero__titulo {
+    font-family: Impact, Haettenschweiler, "Arial Narrow Bold", "Arial Black", sans-serif;
+    font-weight: 400;
+    font-size: clamp(3rem, 8vw, 6rem);
+    line-height: 0.95;
+    max-width: 620px;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    text-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3);
+}
+
+.hero__eslogan {
+    font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.3);
+}
+
+.hero__texto {
+    max-width: 560px;
+    opacity: 0.95;
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6);
+}
+
+.hero__boton {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 14px 32px;
+    border: 2px solid #fff;
+    border-radius: 4px;
+    color: #fff;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    font-size: 0.9rem;
+    transition: background 0.15s, color 0.15s;
+}
+
+.hero__boton:hover {
+    background: #fff;
+    color: var(--color-hero);
+}
+
+/* ---------------- Secciones ---------------- */
+.seccion {
+    padding: 70px 0;
+}
+
+.seccion--gris {
+    background: var(--negro-suave);
+}
+
+.seccion__titulo {
+    text-align: center;
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    margin-bottom: 40px;
+    position: relative;
+}
+
+.seccion__titulo::after {
+    content: "";
+    display: block;
+    width: 60px;
+    height: 4px;
+    background: var(--color-acento);
+    margin: 14px auto 0;
+    border-radius: 2px;
+}
+
+.seccion__vacio {
+    text-align: center;
+    color: var(--gris-texto);
+}
+
+/* ---------------- Videos ---------------- */
+.videos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+    align-items: center;
+}
+
+.video__caja {
+    position: relative;
+    width: 100%;
+    padding-top: 56.25%; /* 16:9 */
+    background: #000;
+    border-radius: var(--radio);
+    overflow: hidden;
+}
+
+.video__caja iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+.video--envivo .video__caja {
+    box-shadow: 0 0 0 2px var(--color-acento);
+}
+
+.video__titulo {
+    margin-top: 10px;
+    font-size: 1.05rem;
+}
+
+/* Videos verticales (reels de Facebook) */
+.video--vertical .video__caja {
+    padding-top: 177.78%; /* relación 9:16 */
+    max-width: 340px;
+    margin: 0 auto;
+}
+
+.video--vertical .video__titulo {
+    text-align: center;
+}
+
+/* ---------------- Noticias ---------------- */
+.noticias {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+}
+
+.noticia {
+    background: #111;
+    border: 1px solid #222;
+    border-radius: var(--radio);
+    overflow: hidden;
+    text-decoration: none;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.15s, border-color 0.15s;
+}
+
+.noticia:hover {
+    transform: translateY(-4px);
+    border-color: var(--color-acento);
+}
+
+.noticia__imagen {
+    aspect-ratio: 16 / 9;
+    background: #1a1a1a;
+    overflow: hidden;
+}
+
+.noticia__imagen img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.noticia__cuerpo {
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+}
+
+.etiqueta {
+    align-self: flex-start;
+    background: var(--color-acento);
+    color: #fff;
+    font-size: 0.75rem;
+    padding: 3px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.noticia__titulo {
+    font-size: 1.1rem;
+    line-height: 1.3;
+}
+
+.noticia__resumen {
+    color: var(--gris-texto);
+    font-size: 0.9rem;
+    flex: 1;
+}
+
+.noticia__fecha {
+    color: #888;
+    font-size: 0.8rem;
+}
+
+/* Noticia incrustada de Facebook */
+.noticia--facebook {
+    background: #fff;
+    border-radius: var(--radio);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.noticia--facebook .noticia__fb {
+    display: flex;
+    justify-content: center;
+    padding: 8px 0 0;
+}
+
+.noticia--facebook .noticia__fb iframe {
+    border: 0;
+}
+
+.noticia--facebook .noticia__titulo {
+    margin: 0;
+    padding: 12px 16px;
+    background: #fff;
+    color: #1a1a1a;
+    font-size: 1rem;
+    line-height: 1.4;
+    border-top: 1px solid #eee;
+}
+
+/* ---------------- Contenido texto ---------------- */
+.contenido {
+    color: var(--gris-texto);
+    font-size: 1.05rem;
+}
+
+.contenido p {
+    margin-bottom: 1em;
+}
+
+/* ---------------- Sobre Nosotros ---------------- */
+.nosotros {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    align-items: center;
+    max-width: 760px;
+    margin: 0 auto;
+}
+
+.nosotros--con-imagen {
+    grid-template-columns: 1fr 1fr;
+    max-width: 1000px;
+}
+
+.nosotros__imagen {
+    width: 100%;
+    border-radius: var(--radio);
+}
+
+/* ---------------- Testimonios ---------------- */
+.testimonios {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 24px;
+}
+
+.testimonio {
+    background: #111;
+    border: 1px solid #222;
+    border-radius: var(--radio);
+    padding: 24px;
+}
+
+.testimonio__imagen {
+    width: 96px;
+    height: 96px;
+    object-fit: cover;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: #1a1a1a;
+}
+
+.testimonio--con-imagen {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+}
+
+.testimonio__cuerpo {
+    flex: 1;
+    min-width: 0;
+}
+
+.testimonio--con-imagen .testimonio__texto,
+.testimonio--con-imagen .testimonio__autor {
+    text-align: left;
+}
+
+.testimonio__texto {
+    font-style: italic;
+    color: #eee;
+    margin-bottom: 16px;
+    text-align: justify;
+}
+
+.testimonio__autor strong {
+    display: block;
+}
+
+.testimonio__autor span {
+    color: var(--gris-texto);
+    font-size: 0.85rem;
+}
+
+/* ---------------- Redes sociales ---------------- */
+.redes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
+}
+
+.red {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: #111;
+    background: #fff;
+    border: 1px solid #fff;
+    padding: 12px 22px;
+    border-radius: 40px;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.red:hover {
+    background: var(--color-acento);
+    border-color: var(--color-acento);
+    color: #fff;
+}
+
+.red__icono {
+    background: var(--color-acento);
+    color: #fff;
+    width: 30px;
+    height: 30px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+}
+
+.red__icono svg {
+    width: 16px;
+    height: 16px;
+}
+
+.red:hover .red__icono {
+    background: #000;
+}
+
+/* ---------------- Contacto ---------------- */
+.contacto {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    align-items: start;
+}
+
+.contacto__datos p {
+    margin-bottom: 18px;
+    color: var(--gris-texto);
+}
+
+.contacto__datos strong {
+    color: #fff;
+}
+
+.contacto__mapa {
+    position: relative;
+    width: 100%;
+    padding-top: 56.25%;
+    border-radius: var(--radio);
+    overflow: hidden;
+    border: 1px solid #222;
+}
+
+.contacto__mapa iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+/* ---------------- Página detalle ---------------- */
+.pagina-detalle {
+    padding: 60px 0;
+    min-height: 60vh;
+}
+
+.articulo__volver {
+    display: inline-block;
+    color: var(--gris-texto);
+    text-decoration: none;
+    margin-bottom: 20px;
+}
+
+.articulo__volver:hover {
+    color: #fff;
+}
+
+.articulo__titulo {
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    line-height: 1.2;
+    margin-bottom: 16px;
+}
+
+.articulo__fecha {
+    display: block;
+    color: #888;
+    margin: 12px 0 20px;
+}
+
+.articulo__imagen {
+    width: 100%;
+    border-radius: var(--radio);
+    margin-bottom: 20px;
+}
+
+.articulo__resumen {
+    font-size: 1.15rem;
+    color: #ddd;
+    margin-bottom: 20px;
+    font-style: italic;
+}
+
+/* ---------------- Pie de página ---------------- */
+.pie {
+    background: #000;
+    border-top: 1px solid #222;
+    padding: 24px 0;
+    text-align: center;
+    color: #888;
+    font-size: 0.9rem;
+}
+
+/* ---------------- Responsive ---------------- */
+@media (max-width: 768px) {
+    .menu-boton {
+        display: flex;
+    }
+
+    .menu {
+        position: absolute;
+        top: 64px;
+        left: 0;
+        right: 0;
+        background: #000;
+        flex-direction: column;
+        padding: 10px 20px 20px;
+        display: none;
+        border-bottom: 1px solid #222;
+    }
+
+    .menu.abierto {
+        display: flex;
+    }
+
+    .menu a {
+        padding: 12px;
+    }
+
+    .contacto {
+        grid-template-columns: 1fr;
+    }
+
+    .hero {
+        padding: 60px 0;
+        min-height: calc(100vh - 64px);
+        text-align: center;
+    }
+
+    .hero__contenido {
+        align-items: stretch;
+        text-align: center;
+    }
+
+    .hero__contenido > * {
+        max-width: 100%;
+    }
+
+    .hero__boton {
+        align-self: center;
+    }
+
+    .hero__foto {
+        width: 100%;
+        -webkit-mask-image: none;
+        mask-image: none;
+        opacity: 0.28;
+    }
+
+    .nosotros--con-imagen {
+        grid-template-columns: 1fr;
+    }
+}
