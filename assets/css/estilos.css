@@ -863,3 +863,6 @@ button:focus-visible {
 @media (max-width: 400px) {
     .noticia--facebook .noticia__fb { overflow-x: auto; }
 }
+/* Tope de altura del post incrustado: los posts de Facebook varian mucho
+   de alto y descolocaban la rejilla. Se puede leer con scroll dentro. */
+.noticia--facebook .noticia__fb { max-height: 460px; overflow-y: auto; }
