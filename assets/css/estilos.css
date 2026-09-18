@@ -866,3 +866,26 @@ button:focus-visible {
 /* Tope de altura del post incrustado: los posts de Facebook varian mucho
    de alto y descolocaban la rejilla. Se puede leer con scroll dentro. */
 .noticia--facebook .noticia__fb { max-height: 460px; overflow-y: auto; }
+
+/* Boton grande para leer la noticia completa en Facebook */
+.noticia__boton { margin: 2px 0 0; }
+.boton-fb {
+    display: block;
+    background: var(--color-acento);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.9rem;
+    line-height: 1.3;
+    padding: 10px 14px;
+    border-radius: 6px;
+    text-align: center;
+    text-decoration: none;
+    transition: background 0.15s;
+}
+.boton-fb:hover { background: #b71c1c; }
+.noticia--facebook .noticia__titulo a { color: #1a1a1a; text-decoration: none; }
+.noticia--facebook .noticia__titulo a:hover { text-decoration: underline; }
+.noticia--facebook .noticia__resumen { color: #555; }
+.articulo__boton { margin: 26px 0 0; }
+.articulo__facebook { margin-top: 26px; padding-top: 18px; border-top: 1px solid #222; }
+.articulo__facebook-titulo { color: var(--gris-texto); font-size: 0.9rem; margin-bottom: 12px; }

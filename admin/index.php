@@ -12,27 +12,28 @@ $mensaje      = '';
 $error        = '';
 $nuevaId      = 0;
 
-// --- Alta rapida: pegar solo la URL de una publicacion de Facebook ---
+// --- Alta rapida: enlace (obligatorio) + titulo y texto (opcionales) ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url_facebook_rapida'])) {
     if (!csrf_verificar($_POST['csrf_token'] ?? null)) {
         $error = 'Token invalido. Intentalo de nuevo.';
     } else {
-        $url = facebook_url_desde_texto((string) $_POST['url_facebook_rapida']);
+        $url          = facebook_url_desde_texto((string) $_POST['url_facebook_rapida']);
+        $tituloManual = trim((string) ($_POST['titulo_rapido'] ?? ''));
+        $texto        = trim((string) ($_POST['texto_rapido'] ?? ''));
 
         if ($url === '') {
-            $error = 'Pega la URL de la publicacion de Facebook.';
+            $error = 'Pega el enlace de la publicacion de Facebook.';
         } else {
-            // Resuelve los enlaces "compartir" a la URL directa del post
             $url = facebook_resolver($url);
 
             if (facebook_post_embed($url) === '') {
-                $error = "Esa URL no es una publicaci\u{00F3}n de Facebook. Copiala desde el propio post con Compartir > Copiar enlace.";
+                $error = "Eso no es una publicaci\u{00F3}n de Facebook. Copia el enlace desde el propio post o pega el c\u{00F3}digo de Insertar entero.";
             } elseif (!facebook_post_disponible($url)) {
                 $error = "Facebook dice que esa publicaci\u{00F3}n ya no est\u{00E1} disponible (se ha eliminado o es privada). Abre el post en tu p\u{00E1}gina, comprueba que sea p\u{00FA}blico y copia el enlace desde la fecha del post.";
             } elseif (mb_strlen($url) > 255) {
-                $error = 'La URL es demasiado larga.';
+                $error = 'El enlace es demasiado largo.';
             } else {
-                // Si esa publicacion ya esta en la web, no se duplica
+                // ¿Ya estaba esa publicacion?
                 $stmt = db()->prepare('SELECT id FROM noticias WHERE url_facebook = ? LIMIT 1');
                 $stmt->execute([$url]);
                 $yaEsta = (int) $stmt->fetchColumn();
@@ -41,9 +42,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url_facebook_rapida']
                 }
 
                 $hoy    = date('Y-m-d');
-                $titulo = "Publicaci\u{00F3}n del " . fecha_larga($hoy);
+                $titulo = ($tituloManual !== '') ? $tituloManual : "Publicaci\u{00F3}n del " . fecha_larga($hoy);
+                if (mb_strlen($titulo) > 200) { $titulo = mb_substr($titulo, 0, 200); }
 
-                // Slug unico
+                // El resumen de la tarjeta se saca del texto pegado
+                $resumen = ($texto !== '') ? mb_substr(preg_replace('/\s+/', ' ', $texto), 0, 180) : '';
+
                 $slug = slugify($titulo);
                 if ($slug === '') { $slug = 'publicacion'; }
                 $base = $slug;
@@ -57,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url_facebook_rapida']
 
                 db()->prepare('INSERT INTO noticias (titulo, slug, resumen, contenido, imagen, url_facebook, categoria_id, destacada, fecha_publicacion)
                                VALUES (?, ?, ?, ?, NULL, ?, NULL, 0, ?)')
-                    ->execute([$titulo, $slug, '', '', $url, $hoy]);
+                    ->execute([$titulo, $slug, $resumen, $texto, $url, $hoy]);
 
                 redirigir('index.php?anadida=' . (int) db()->lastInsertId());
             }
@@ -76,10 +80,10 @@ if (isset($_GET['repetida'])) {
 }
 
 $contadores = [
-    'Noticias'                 => (int) db()->query('SELECT COUNT(*) FROM noticias')->fetchColumn(),
-    'Videos'                   => (int) db()->query('SELECT COUNT(*) FROM videos')->fetchColumn(),
-    'Testimonios'              => (int) db()->query('SELECT COUNT(*) FROM testimonios')->fetchColumn(),
-    "Categor\u{00ED}as"        => (int) db()->query('SELECT COUNT(*) FROM categorias')->fetchColumn(),
+    'Noticias'          => (int) db()->query('SELECT COUNT(*) FROM noticias')->fetchColumn(),
+    'Videos'            => (int) db()->query('SELECT COUNT(*) FROM videos')->fetchColumn(),
+    'Testimonios'       => (int) db()->query('SELECT COUNT(*) FROM testimonios')->fetchColumn(),
+    "Categor\u{00ED}as" => (int) db()->query('SELECT COUNT(*) FROM categorias')->fetchColumn(),
 ];
 
 require __DIR__ . '/includes/encabezado.php';
@@ -94,7 +98,7 @@ require __DIR__ . '/includes/encabezado.php';
         <?= e($mensaje) ?>
         <?php if ($nuevaId > 0): ?>
             <span class="alerta__acciones">
-                <a href="noticias.php?id=<?= $nuevaId ?>">ponerle t&iacute;tulo y categor&iacute;a</a>
+                <a href="noticias.php?id=<?= $nuevaId ?>">editarla</a>
                 <a href="../index.php" target="_blank" rel="noopener">ver en la portada</a>
             </span>
         <?php endif; ?>
@@ -103,23 +107,31 @@ require __DIR__ . '/includes/encabezado.php';
 <?php if ($error): ?><div class="alerta alerta--error"><?= e($error) ?></div><?php endif; ?>
 
 <div class="formulario formulario--rapido">
-    <h2>A&ntilde;adir publicaci&oacute;n de Facebook</h2>
+    <h2>A&ntilde;adir noticia de Facebook</h2>
     <p class="ayuda">
-        <strong>C&oacute;mo copiar el enlace:</strong> abre la publicaci&oacute;n en Facebook y pulsa la
-        <strong>fecha que aparece encima del post</strong> (o los tres puntos &rarr; <em>Copiar enlace</em>).
-        Pega aqu&iacute; lo que te copie: vale tanto el enlace corto de "Compartir" como el largo que
-        acaba en <code>pfbid...</code>. Si en el ordenador solo te sale <strong>Insertar</strong>, pega el c&oacute;digo entero: la web saca el enlace sola.
+        <strong>El enlace:</strong> abre la publicaci&oacute;n en Facebook y pulsa la <strong>fecha del post</strong>
+        (o los tres puntos &rarr; Copiar enlace). Tambi&eacute;n vale pegar el c&oacute;digo de <strong>Insertar</strong> entero.
     </p>
     <p class="ayuda">
-        La web lo convierte sola, comprueba que Facebook deja mostrarlo y lo publica con la fecha de hoy.
-        Si el post es privado o se ha borrado, te avisa y no lo guarda.
+        El <strong>t&iacute;tulo</strong> y el <strong>texto</strong> son opcionales: si los rellenas, la noticia se puede
+        leer completa en tu web; si los dejas vac&iacute;os, se muestra el post de Facebook y ya.
     </p>
     <form method="post" action="index.php">
         <?= csrf_campo() ?>
         <div class="campo">
-            <label for="url_facebook_rapida">URL de la publicaci&oacute;n</label>
+            <label for="url_facebook_rapida">Enlace de la publicaci&oacute;n *</label>
             <input type="text" inputmode="url" id="url_facebook_rapida" name="url_facebook_rapida" maxlength="1500" required autofocus
                    placeholder="https://www.facebook.com/radiomiraflorestelevision/posts/...">
+        </div>
+        <div class="campo">
+            <label for="titulo_rapido">T&iacute;tulo</label>
+            <input type="text" id="titulo_rapido" name="titulo_rapido" maxlength="200"
+                   placeholder="Si lo dejas vac&iacute;o se pone la fecha">
+        </div>
+        <div class="campo">
+            <label for="texto_rapido">Texto de la noticia</label>
+            <textarea id="texto_rapido" name="texto_rapido" rows="6"
+                      placeholder="Opcional. Si lo pegas, se podr&aacute; leer completo en tu web (en Facebook sigue estando el original)."></textarea>
         </div>
         <button class="boton" type="submit">Guardar y publicar</button>
     </form>

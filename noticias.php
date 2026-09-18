@@ -109,11 +109,14 @@ require __DIR__ . '/includes/header.php';
                                 <?php if (!empty($noticia['categoria'])): ?>
                                     <span class="etiqueta"><?= e($noticia['categoria']) ?></span>
                                 <?php endif; ?>
-                                <h3 class="noticia__titulo"><?= e($noticia['titulo']) ?></h3>
-                                <div class="noticia__pie">
-                                    <time class="noticia__fecha"><?= fecha_larga($noticia['fecha_publicacion']) ?></time>
-                                    <a class="noticia__enlace-fb" href="<?= e($noticia['url_facebook']) ?>" target="_blank" rel="noopener">Ver en Facebook &nearr;</a>
-                                </div>
+                                <h3 class="noticia__titulo"><a href="noticia.php?slug=<?= e($noticia['slug']) ?>"><?= e($noticia['titulo']) ?></a></h3>
+                                <?php if (!empty($noticia['resumen'])): ?>
+                                    <p class="noticia__resumen"><?= e($noticia['resumen']) ?></p>
+                                <?php endif; ?>
+                                <p class="noticia__boton">
+                                    <a class="boton-fb" href="<?= e($noticia['url_facebook']) ?>" target="_blank" rel="noopener">Leer la noticia completa en Facebook</a>
+                                </p>
+                                <time class="noticia__fecha"><?= fecha_larga($noticia['fecha_publicacion']) ?></time>
                             </div>
                         </div>
                     <?php else: ?>
