@@ -45,8 +45,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url_facebook_rapida']
                 $titulo = ($tituloManual !== '') ? $tituloManual : "Publicaci\u{00F3}n del " . fecha_larga($hoy);
                 if (mb_strlen($titulo) > 200) { $titulo = mb_substr($titulo, 0, 200); }
 
-                // El resumen de la tarjeta se saca del texto pegado
                 $resumen = ($texto !== '') ? mb_substr(preg_replace('/\s+/', ' ', $texto), 0, 180) : '';
+                $imagen  = null;
+                $traido  = false;
+
+                // Se trae del post lo que falte (Facebook lo publica para los robots:
+                // no hace falta token ni aplicacion)
+                $datos = facebook_datos_post($url);
+                if ($texto === '' && !empty($datos['texto'])) {
+                    $texto   = $datos['texto'];
+                    $resumen = mb_substr($texto, 0, 180);
+                    $traido  = true;
+                }
+                if (!empty($datos['imagen'])) {
+                    $bajada = guardar_imagen_desde_url($datos['imagen']);
+                    if ($bajada !== null) {
+                        $imagen = $bajada;
+                        $traido = true;
+                    }
+                }
 
                 $slug = slugify($titulo);
                 if ($slug === '') { $slug = 'publicacion'; }
@@ -60,10 +77,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url_facebook_rapida']
                 }
 
                 db()->prepare('INSERT INTO noticias (titulo, slug, resumen, contenido, imagen, url_facebook, categoria_id, destacada, fecha_publicacion)
-                               VALUES (?, ?, ?, ?, NULL, ?, NULL, 0, ?)')
-                    ->execute([$titulo, $slug, $resumen, $texto, $url, $hoy]);
+                               VALUES (?, ?, ?, ?, ?, ?, NULL, 0, ?)')
+                    ->execute([$titulo, $slug, $resumen, $texto, $imagen, $url, $hoy]);
 
-                redirigir('index.php?anadida=' . (int) db()->lastInsertId());
+                redirigir('index.php?anadida=' . (int) db()->lastInsertId() . ($traido ? '&traido=1' : ''));
             }
         }
     }
@@ -72,6 +89,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url_facebook_rapida']
 if (isset($_GET['anadida'])) {
     $nuevaId = (int) $_GET['anadida'];
     $mensaje = "Publicaci\u{00F3}n a\u{00F1}adida correctamente.";
+    if (!empty($_GET['traido'])) {
+        $mensaje .= " Se han tra\u{00ED}do del post el texto y la imagen.";
+    }
 }
 
 if (isset($_GET['repetida'])) {
@@ -113,7 +133,7 @@ require __DIR__ . '/includes/encabezado.php';
         (o los tres puntos &rarr; Copiar enlace). Tambi&eacute;n vale pegar el c&oacute;digo de <strong>Insertar</strong> entero.
     </p>
     <p class="ayuda">
-        El <strong>t&iacute;tulo</strong> y el <strong>texto</strong> son opcionales: si los rellenas, la noticia se puede
+        El texto y la imagen se traen solos del post. Si escribes un <strong>texto</strong> propio, se usa el tuyo.
         leer completa en tu web; si los dejas vac&iacute;os, se muestra el post de Facebook y ya.
     </p>
     <form method="post" action="index.php">

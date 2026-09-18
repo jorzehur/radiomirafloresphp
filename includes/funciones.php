@@ -309,3 +309,123 @@ function facebook_url_desde_texto(string $texto): string {
 
     return $texto;
 }
+/**
+ * Lee del propio post su texto y su imagen. Facebook los publica para los
+ * robots (etiquetas og:), asi que NO hace falta token ni aplicacion.
+ * Devuelve ['texto' => ..., 'imagen' => ..., 'url' => ...] (vacio si falla).
+ */
+function facebook_datos_post(string $url): array {
+    if (!function_exists('curl_init')) {
+        return array();
+    }
+
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_MAXREDIRS      => 3,
+        CURLOPT_CONNECTTIMEOUT => 8,
+        CURLOPT_TIMEOUT        => 20,
+        CURLOPT_SSL_VERIFYPEER => true,
+        CURLOPT_USERAGENT      => 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)',
+    ]);
+    $html = curl_exec($ch);
+    $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($html === false || $code !== 200) {
+        return array();
+    }
+
+    $salida = array('texto' => '', 'imagen' => '', 'url' => '');
+    $mapa = array('og:description' => 'texto', 'og:image' => 'imagen', 'og:url' => 'url');
+    foreach ($mapa as $meta => $clave) {
+        if (preg_match('~<meta[^>]+property=["\']' . preg_quote($meta, '~') . '["\'][^>]+content=["\']([^"\']*)["\']~i', $html, $m)) {
+            $salida[$clave] = html_entity_decode($m[1], ENT_QUOTES, 'UTF-8');
+        }
+    }
+
+    // Texto en una linea y sin los puntos suspensivos que anade la vista previa
+    $salida['texto'] = trim(preg_replace('/\s+/', ' ', $salida['texto']));
+    $salida['texto'] = trim(preg_replace('/\s*(\.\.\.|\x{2026})\s*$/u', '', $salida['texto']));
+    if (mb_strlen($salida['texto']) > 400) {
+        $salida['texto'] = mb_substr($salida['texto'], 0, 400) . '...';
+    }
+
+    return $salida;
+}
+
+/**
+ * Descarga una imagen del CDN de Facebook y la guarda en uploads como WebP.
+ * Asi la imagen queda en tu servidor (no depende de Facebook y no falla el CSP).
+ */
+function guardar_imagen_desde_url(string $url): ?string {
+    if (!function_exists('curl_init') || !function_exists('imagecreatefromstring') || !function_exists('imagewebp')) {
+        return null;
+    }
+
+    // Solo imagenes servidas por Facebook
+    $host = strtolower((string) parse_url($url, PHP_URL_HOST));
+    if ($host === '' || (!preg_match('/(^|\.)fbcdn\.net$/', $host)
+                      && !preg_match('/(^|\.)fbsbx\.com$/', $host)
+                      && !preg_match('/(^|\.)facebook\.com$/', $host))) {
+        return null;
+    }
+
+    // El CDN de Facebook solo entrega la imagen al mismo robot que genero la URL,
+    // asi que se prueban los dos agentes y se usa el primero que devuelva imagen.
+    $agentes = array(
+        'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    );
+
+    $datos = false;
+    foreach ($agentes as $ua) {
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_MAXREDIRS      => 3,
+            CURLOPT_CONNECTTIMEOUT => 8,
+            CURLOPT_TIMEOUT        => 25,
+            CURLOPT_SSL_VERIFYPEER => true,
+            CURLOPT_USERAGENT      => $ua,
+        ]);
+        $intento = curl_exec($ch);
+        $code    = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($intento !== false && $code === 200 && strlen($intento) <= 8 * 1024 * 1024
+            && @getimagesizefromstring($intento) !== false) {
+            $datos = $intento;
+            break;
+        }
+    }
+
+    if ($datos === false) {
+        return null;
+    }
+
+    $info = @getimagesizefromstring($datos);
+    if ($info === false || !in_array($info['mime'], array('image/jpeg', 'image/png', 'image/gif', 'image/webp'), true)) {
+        return null;
+    }
+
+    $img = @imagecreatefromstring($datos);
+    if ($img === false) {
+        return null;
+    }
+
+    imagepalettetotruecolor($img);
+    imagealphablending($img, false);
+    imagesavealpha($img, true);
+
+    if (!is_dir(DIR_UPLOADS)) {
+        @mkdir(DIR_UPLOADS, 0755, true);
+    }
+    $nombre = 'fb-' . bin2hex(random_bytes(8)) . '.webp';
+    $guardado = imagewebp($img, DIR_UPLOADS . '/' . $nombre, 82);
+    imagedestroy($img);
+
+    return $guardado ? $nombre : null;
+}
