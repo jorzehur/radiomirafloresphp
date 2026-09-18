@@ -48,9 +48,8 @@ require __DIR__ . '/includes/header.php';
                 <?php if (!empty($noticia['url_facebook'])): ?>
                     <?php $GLOBALS['cargar_fb_sdk'] = true; ?>
                     <div class="articulo__facebook">
-                        <div class="fb-post" data-href="<?= e($noticia['url_facebook']) ?>" data-show-text="true" data-width="500">
-        <p class="fb-post__respaldo"><a href="<?= e($noticia['url_facebook']) ?>" target="_blank" rel="noopener">Ver en Facebook</a></p>
-    </div>
+                        <div class="fb-post" data-href="<?= e($noticia['url_facebook']) ?>" data-show-text="true" data-width="500"></div>
+                        <p class="articulo__facebook-enlace"><a href="<?= e($noticia['url_facebook']) ?>" target="_blank" rel="noopener">Ver esta publicación en Facebook &nearr;</a></p>
                     </div>
                 <?php else: ?>
                     <?php if ($noticia['categoria']): ?>

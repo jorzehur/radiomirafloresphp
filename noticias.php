@@ -99,11 +99,22 @@ require __DIR__ . '/includes/header.php';
                     <?php if (!empty($noticia['url_facebook'])): ?>
                         <div class="noticia noticia--facebook">
                             <div class="noticia__fb">
-                                <div class="fb-post" data-href="<?= e($noticia['url_facebook']) ?>" data-show-text="true" data-width="350">
-        <p class="fb-post__respaldo"><a href="<?= e($noticia['url_facebook']) ?>" target="_blank" rel="noopener">Ver en Facebook</a></p>
-    </div>
+                                <div class="fb-post" data-href="<?= e($noticia['url_facebook']) ?>" data-show-text="true" data-width="350"></div>
+                                <div class="noticia__fb-vacio">
+                                    <span>Esta publicación se lee en Facebook<br>
+                                    <a href="<?= e($noticia['url_facebook']) ?>" target="_blank" rel="noopener">Abrir en Facebook &nearr;</a></span>
+                                </div>
                             </div>
-                            <h3 class="noticia__titulo"><?= e($noticia['titulo']) ?></h3>
+                            <div class="noticia__cuerpo">
+                                <?php if (!empty($noticia['categoria'])): ?>
+                                    <span class="etiqueta"><?= e($noticia['categoria']) ?></span>
+                                <?php endif; ?>
+                                <h3 class="noticia__titulo"><?= e($noticia['titulo']) ?></h3>
+                                <div class="noticia__pie">
+                                    <time class="noticia__fecha"><?= fecha_larga($noticia['fecha_publicacion']) ?></time>
+                                    <a class="noticia__enlace-fb" href="<?= e($noticia['url_facebook']) ?>" target="_blank" rel="noopener">Ver en Facebook &nearr;</a>
+                                </div>
+                            </div>
                         </div>
                     <?php else: ?>
                         <a class="noticia" href="noticia.php?slug=<?= e($noticia['slug']) ?>">

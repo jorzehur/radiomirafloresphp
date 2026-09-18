@@ -83,3 +83,19 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 });
+// ============================================================
+//  Si Facebook no llega a cargar el post (bloqueadores, sin red...)
+//  la tarjeta muestra su respaldo en vez de quedar vacia
+// ============================================================
+document.addEventListener('DOMContentLoaded', function () {
+    window.setTimeout(function () {
+        var tarjetas = document.querySelectorAll('.noticia--facebook');
+
+        for (var i = 0; i < tarjetas.length; i++) {
+            var post = tarjetas[i].querySelector('.fb-post');
+            if (post && !post.querySelector('iframe')) {
+                tarjetas[i].className += ' noticia--sin-embed';
+            }
+        }
+    }, 5000);
+});
