@@ -42,5 +42,9 @@ if (!$u) {
 db()->prepare('UPDATE usuarios SET password = ? WHERE id = ?')
     ->execute([password_hash($nueva, PASSWORD_DEFAULT), $u['id']]);
 
+// Se quita tambien el bloqueo por intentos fallidos, por si estaba bloqueado
+db()->prepare('DELETE FROM intentos_login WHERE usuario = ?')->execute([$u['usuario']]);
+
 echo "Contrasena cambiada para el usuario \"" . $u['usuario'] . "\".\n";
+echo "Tambien se ha quitado el bloqueo por intentos fallidos.\n";
 echo "Entra al panel y, si quieres, cambiala otra vez desde \"Mi cuenta\".\n";

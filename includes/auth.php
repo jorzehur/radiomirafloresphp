@@ -108,6 +108,12 @@ function login_espera(string $usuario): int {
         if ($hasta) {
             $espera = max(0, strtotime($hasta) - time());
         }
+
+        // Si el bloqueo ya caduco, se da otra tanda de intentos. Sin esto, cada
+        // fallo posterior volvia a bloquear 5 minutos y el bloqueo no acababa nunca.
+        $stmt = db()->prepare('UPDATE intentos_login SET intentos = 0, bloqueado_hasta = NULL
+                               WHERE ip = ? AND usuario = ? AND bloqueado_hasta IS NOT NULL AND bloqueado_hasta <= NOW()');
+        $stmt->execute([login_ip(), mb_substr($usuario, 0, 50)]);
         // Ataque con muchos usuarios distintos desde la misma IP
         $stmt = db()->prepare('SELECT COUNT(*) FROM intentos_login
                                WHERE ip = ? AND actualizado_en > DATE_SUB(NOW(), INTERVAL 15 MINUTE)');
