@@ -99,7 +99,9 @@ require __DIR__ . '/includes/header.php';
                         <?php $GLOBALS['cargar_fb_sdk'] = true; ?>
                         <div class="noticia noticia--facebook">
                             <div class="noticia__fb">
-                                <div class="fb-post" data-href="<?= e($noticia['url_facebook']) ?>" data-show-text="true" data-width="350"></div>
+                                <div class="fb-post" data-href="<?= e($noticia['url_facebook']) ?>" data-show-text="true" data-width="350">
+        <p class="fb-post__respaldo"><a href="<?= e($noticia['url_facebook']) ?>" target="_blank" rel="noopener">Ver en Facebook</a></p>
+    </div>
                             </div>
                             <h3 class="noticia__titulo"><?= e($noticia['titulo']) ?></h3>
                         </div>

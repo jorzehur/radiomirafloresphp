@@ -781,3 +781,10 @@ button:focus-visible {
 }
 /* Miniatura no disponible: recuadro negro con el boton de play */
 .video-fachada__imagen--error { display: none; }
+
+/* Enlace que se ve si Facebook no carga el post (bloqueadores, sin JS...) */
+.fb-post__respaldo { padding: 18px; text-align: center; font-weight: 700; }
+.noticia--facebook .fb-post__respaldo a { color: var(--color-acento); text-decoration: none; }
+.noticia--facebook .fb-post__respaldo a:hover { text-decoration: underline; }
+.articulo__facebook .fb-post__respaldo a { color: #fff; text-decoration: none; }
+.articulo__facebook .fb-post__respaldo a:hover { text-decoration: underline; }
