@@ -42,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['borrar'])) {
         $contenido  = trim($_POST['contenido'] ?? '');
         $destacada    = isset($_POST['destacada']) ? 1 : 0;
         $fecha        = $_POST['fecha_publicacion'] ?? date('Y-m-d');
-        $url_facebook = trim($_POST['url_facebook'] ?? '');
+        $url_facebook = facebook_url_desde_texto((string) ($_POST['url_facebook'] ?? ''));
 
         // Resolver y validar el enlace de Facebook (si se proporcionó)
         if ($url_facebook !== '') {
@@ -193,7 +193,7 @@ require __DIR__ . '/includes/encabezado.php';
 
     <div class="campo">
         <label for="url_facebook">URL de Facebook (opcional)</label>
-        <input type="url" id="url_facebook" name="url_facebook" maxlength="255" value="<?= e($editando['url_facebook']) ?>" placeholder="https://www.facebook.com/...">
+        <input type="text" inputmode="url" id="url_facebook" name="url_facebook" maxlength="1500" value="<?= e($editando['url_facebook']) ?>" placeholder="https://www.facebook.com/...">
         <p class="ayuda">Si pegas el enlace de una publicación de Facebook, la noticia se mostrará incrustada desde Facebook (con su imagen y texto), sin necesidad de subir imagen ni escribir contenido. Acepta enlaces "compartir".</p>
     </div>
 

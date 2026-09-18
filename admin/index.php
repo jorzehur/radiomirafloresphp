@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url_facebook_rapida']
     if (!csrf_verificar($_POST['csrf_token'] ?? null)) {
         $error = 'Token invalido. Intentalo de nuevo.';
     } else {
-        $url = trim((string) $_POST['url_facebook_rapida']);
+        $url = facebook_url_desde_texto((string) $_POST['url_facebook_rapida']);
 
         if ($url === '') {
             $error = 'Pega la URL de la publicacion de Facebook.';
@@ -108,7 +108,7 @@ require __DIR__ . '/includes/encabezado.php';
         <strong>C&oacute;mo copiar el enlace:</strong> abre la publicaci&oacute;n en Facebook y pulsa la
         <strong>fecha que aparece encima del post</strong> (o los tres puntos &rarr; <em>Copiar enlace</em>).
         Pega aqu&iacute; lo que te copie: vale tanto el enlace corto de "Compartir" como el largo que
-        acaba en <code>pfbid...</code>.
+        acaba en <code>pfbid...</code>. Si en el ordenador solo te sale <strong>Insertar</strong>, pega el c&oacute;digo entero: la web saca el enlace sola.
     </p>
     <p class="ayuda">
         La web lo convierte sola, comprueba que Facebook deja mostrarlo y lo publica con la fecha de hoy.
@@ -118,7 +118,7 @@ require __DIR__ . '/includes/encabezado.php';
         <?= csrf_campo() ?>
         <div class="campo">
             <label for="url_facebook_rapida">URL de la publicaci&oacute;n</label>
-            <input type="url" id="url_facebook_rapida" name="url_facebook_rapida" required autofocus
+            <input type="text" inputmode="url" id="url_facebook_rapida" name="url_facebook_rapida" maxlength="1500" required autofocus
                    placeholder="https://www.facebook.com/radiomiraflorestelevision/posts/...">
         </div>
         <button class="boton" type="submit">Guardar y publicar</button>

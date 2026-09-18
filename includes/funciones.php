@@ -284,3 +284,28 @@ function facebook_post_disponible(string $url): bool {
 
     return true;
 }
+/**
+ * Saca la URL de la publicacion de cualquier cosa que pegue el usuario:
+ * un enlace normal, un enlace corto de "Compartir" o el codigo completo
+ * que da Facebook en "Insertar" (el iframe del plugin).
+ */
+function facebook_url_desde_texto(string $texto): string {
+    $texto = trim($texto);
+
+    // Codigo de "Insertar": <iframe src="https://www.facebook.com/plugins/post.php?href=...">
+    if (preg_match('~plugins/(?:post|video)\.php\?href=([^"&\s]+)~i', $texto, $m)) {
+        return urldecode(html_entity_decode($m[1], ENT_QUOTES, 'UTF-8'));
+    }
+
+    // Formato XFBML: <div class="fb-post" data-href="...">
+    if (preg_match('~data-href="([^"]+)"~i', $texto, $m)) {
+        return html_entity_decode($m[1], ENT_QUOTES, 'UTF-8');
+    }
+
+    // Un enlace suelto (normal o de "Compartir")
+    if (preg_match('~https?://[^\s"\'<>]+~i', $texto, $m)) {
+        return html_entity_decode($m[0], ENT_QUOTES, 'UTF-8');
+    }
+
+    return $texto;
+}

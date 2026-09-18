@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['borrar'])) {
     } else {
         $id         = (int) ($_POST['id'] ?? 0);
         $titulo     = trim($_POST['titulo'] ?? '');
-        $url        = trim($_POST['url_video'] ?? '');
+        $url        = facebook_url_desde_texto((string) ($_POST['url_video'] ?? ''));
         $plataforma = ($_POST['plataforma'] ?? 'youtube') === 'facebook' ? 'facebook' : 'youtube';
         $tipo       = ($_POST['tipo'] ?? 'video') === 'en_vivo' ? 'en_vivo' : 'video';
         $activo     = isset($_POST['activo']) ? 1 : 0;
@@ -108,7 +108,7 @@ require __DIR__ . '/includes/encabezado.php';
 
     <div class="campo">
         <label for="url_video">URL del video *</label>
-        <input type="url" id="url_video" name="url_video" required value="<?= e($editando['url_video']) ?>" placeholder="https://www.youtube.com/watch?v=...">
+        <input type="text" inputmode="url" id="url_video" name="url_video" required value="<?= e($editando['url_video']) ?>" placeholder="https://www.youtube.com/watch?v=...">
         <p class="ayuda">Para una transmisión en vivo, pega la URL del directo. En Facebook puedes pegar el enlace del video, del directo o un enlace "compartir" (se convertirá automáticamente).</p>
     </div>
 
