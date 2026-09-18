@@ -14,6 +14,47 @@ $error = '';
 // --- Categorías para el selector ---
 $categorias = db()->query('SELECT id, nombre FROM categorias ORDER BY nombre')->fetchAll();
 
+// --- TRAER TEXTO E IMAGEN DEL POST DE FACEBOOK (sin token) ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['traer_datos'])) {
+    if (!csrf_verificar($_POST['csrf_token'] ?? null)) {
+        $error = 'Token inválido. Inténtalo de nuevo.';
+    } else {
+        $idTraer = (int) $_POST['traer_datos'];
+        $stmt = db()->prepare('SELECT id, url_facebook, resumen, contenido, imagen FROM noticias WHERE id = ?');
+        $stmt->execute([$idTraer]);
+        $fila = $stmt->fetch();
+
+        if (!$fila || empty($fila['url_facebook'])) {
+            $error = 'Esa noticia no tiene enlace de Facebook.';
+        } else {
+            $datos   = facebook_datos_post($fila['url_facebook']);
+            $cambios = array();
+
+            if (!empty($datos['texto'])) {
+                if (trim((string) $fila['contenido']) === '') { $cambios['contenido'] = $datos['texto']; }
+                if (trim((string) $fila['resumen']) === '')   { $cambios['resumen']   = mb_substr($datos['texto'], 0, 180); }
+            }
+            if (!empty($datos['imagen']) && (string) $fila['imagen'] === '') {
+                $nuevaImagen = guardar_imagen_desde_url($datos['imagen']);
+                if ($nuevaImagen !== null) { $cambios['imagen'] = $nuevaImagen; }
+            }
+
+            if ($cambios) {
+                $sets = array(); $vals = array();
+                foreach ($cambios as $campo => $valor) {
+                    $sets[] = $campo . ' = ?';
+                    $vals[] = $valor;
+                }
+                $vals[] = (int) $fila['id'];
+                db()->prepare('UPDATE noticias SET ' . implode(', ', $sets) . ' WHERE id = ?')->execute($vals);
+                $mensaje = 'Traído del post: ' . implode(', ', array_keys($cambios)) . '.';
+            } else {
+                $mensaje = 'No había nada que traer: ya tenía texto e imagen, o Facebook no devolvió datos.';
+            }
+        }
+    }
+}
+
 // --- BORRAR ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['borrar'])) {
     if (!csrf_verificar($_POST['csrf_token'] ?? null)) {
@@ -31,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['borrar'])) {
 }
 
 // --- GUARDAR (crear o editar) ---
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['borrar'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['borrar']) && !isset($_POST['traer_datos'])) {
     if (!csrf_verificar($_POST['csrf_token'] ?? null)) {
         $error = 'Token inválido. Los cambios no se guardaron.';
     } else {
@@ -136,7 +177,7 @@ $mostrarForm = $editando !== null;
 
 // --- Listado ---
 $lista = db()->query(
-    'SELECT n.id, n.titulo, n.imagen, n.fecha_publicacion, n.destacada, c.nombre AS categoria
+    'SELECT n.id, n.titulo, n.imagen, n.url_facebook, n.resumen, n.contenido, n.fecha_publicacion, n.destacada, c.nombre AS categoria
      FROM noticias n LEFT JOIN categorias c ON c.id = n.categoria_id
      ORDER BY n.fecha_publicacion DESC, n.id DESC'
 )->fetchAll();
@@ -252,6 +293,13 @@ require __DIR__ . '/includes/encabezado.php';
                 <td><?= $n['destacada'] ? 'Sí' : 'No' ?></td>
                 <td>
                     <a class="boton boton--pequeno" href="noticias.php?id=<?= $n['id'] ?>">Editar</a>
+                    <?php if (!empty($n['url_facebook']) && (trim((string) $n['contenido']) === '' || (string) $n['imagen'] === '')): ?>
+                    <form class="form-borrar" method="post" action="noticias.php">
+                        <?= csrf_campo() ?>
+                        <input type="hidden" name="traer_datos" value="<?= (int) $n['id'] ?>">
+                        <button class="boton boton--pequeno boton--secundario" type="submit">Traer texto e imagen</button>
+                    </form>
+                    <?php endif; ?>
                     <form class="form-borrar" method="post" action="noticias.php" onsubmit="return confirm('¿Eliminar esta noticia?');">
     <?= csrf_campo() ?>
     <input type="hidden" name="borrar" value="<?= (int) $n['id'] ?>">
