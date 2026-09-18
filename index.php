@@ -47,19 +47,35 @@ require __DIR__ . '/includes/header.php';
             <div class="videos">
                 <?php foreach ($videos as $video): ?>
                     <?php
-                        $embed = ($video['plataforma'] === 'facebook') ? facebook_embed($video['url_video']) : youtube_embed($video['url_video']);
+                        $esYouTube  = ($video['plataforma'] !== 'facebook');
+                        $embed      = $esYouTube ? youtube_embed($video['url_video']) : facebook_embed($video['url_video']);
+                        $videoId    = $esYouTube ? youtube_id($video['url_video']) : null;
                         $esVertical = ($video['plataforma'] === 'facebook' && preg_match('#/reel/#', $video['url_video']));
+                        // Fachada: los videos de YouTube muestran su miniatura y solo
+                        // cargan el reproductor (cerca de 1 MB) cuando se pulsa play.
+                        $conFachada = ($esYouTube && $videoId !== null);
+                        $miniatura  = $conFachada ? 'https://i.ytimg.com/vi/' . rawurlencode($videoId) . '/hqdefault.jpg' : '';
                     ?>
                     <?php if ($embed === ''): continue; endif; ?>
                     <div class="video<?= $video['tipo'] === 'en_vivo' ? ' video--envivo' : '' ?><?= $esVertical ? ' video--vertical' : '' ?>">
                         <div class="video__caja">
-                            <iframe
-                                src="<?= e($embed) ?>"
-                                title="<?= e($video['titulo']) ?>"
-                                loading="lazy"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowfullscreen>
-                            </iframe>
+                            <?php if ($conFachada): ?>
+                                <button class="video-fachada" type="button"
+                                        data-embed="<?= e($embed) ?>"
+                                        data-titulo="<?= e($video['titulo']) ?>"
+                                        aria-label="Reproducir video: <?= e($video['titulo']) ?>">
+                                    <img class="video-fachada__imagen" src="<?= e($miniatura) ?>" alt="" loading="lazy" width="480" height="270">
+                                    <span class="video-fachada__play" aria-hidden="true"><svg viewBox="0 0 24 24" width="72" height="72"><circle cx="12" cy="12" r="12" fill="rgba(0,0,0,.6)"/><path d="M9.5 7.5l7 4.5-7 4.5z" fill="#fff"/></svg></span>
+                                </button>
+                            <?php else: ?>
+                                <iframe
+                                    src="<?= e($embed) ?>"
+                                    title="<?= e($video['titulo']) ?>"
+                                    loading="lazy"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowfullscreen>
+                                </iframe>
+                            <?php endif; ?>
                         </div>
                         <h3 class="video__titulo"><?= e($video['titulo']) ?></h3>
                     </div>

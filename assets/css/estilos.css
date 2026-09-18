@@ -737,3 +737,45 @@ button:focus-visible {
     .con-js .menu.abierto { display: flex; }
     .con-js .menu-boton { display: flex; }
 }
+/* =====================================================================
+   Fachada de video: miniatura + boton de play
+   El reproductor de YouTube solo se carga al pulsar (ahorra ~1 MB por video)
+   ===================================================================== */
+.video-fachada {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    background: #000;
+    cursor: pointer;
+    overflow: hidden;
+}
+.video-fachada__imagen {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.85;
+    transition: opacity 0.15s, transform 0.25s;
+}
+.video-fachada:hover .video-fachada__imagen,
+.video-fachada:focus-visible .video-fachada__imagen {
+    opacity: 1;
+    transform: scale(1.03);
+}
+.video-fachada__play {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+.video-fachada__play svg {
+    width: 72px;
+    height: 72px;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.55));
+}

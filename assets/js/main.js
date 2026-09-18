@@ -49,3 +49,24 @@ document.addEventListener('DOMContentLoaded', function () {
         cerrar();
     });
 });
+// ============================================================
+//  Videos: cargar el reproductor de YouTube solo al pulsar play
+// ============================================================
+document.addEventListener('DOMContentLoaded', function () {
+    var fachadas = document.querySelectorAll('.video-fachada');
+
+    for (var i = 0; i < fachadas.length; i++) {
+        fachadas[i].addEventListener('click', function () {
+            var caja = this.parentNode;
+            var iframe = document.createElement('iframe');
+
+            iframe.setAttribute('src', this.getAttribute('data-embed') + '?autoplay=1&rel=0');
+            iframe.setAttribute('title', this.getAttribute('data-titulo') || 'Video');
+            iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
+            iframe.setAttribute('allowfullscreen', '');
+
+            caja.innerHTML = '';
+            caja.appendChild(iframe);
+        }, { once: true });
+    }
+});

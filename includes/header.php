@@ -66,6 +66,8 @@ $descFinal   = ($descripcion_pagina !== '') ? $descripcion_pagina : $eslogan;
 <?php endif; ?>
     <meta name="twitter:card" content="<?= $og_imagen !== '' ? 'summary_large_image' : 'summary' ?>">
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+    <link rel="preconnect" href="https://i.ytimg.com">
+    <link rel="dns-prefetch" href="https://www.youtube-nocookie.com">
     <link rel="stylesheet" href="assets/css/estilos.css?v=<?= @filemtime(__DIR__ . '/../assets/css/estilos.css') ?>">
     <style>
         :root {
