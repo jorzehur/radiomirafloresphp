@@ -63,7 +63,7 @@ Options -Indexes
 # HSTS solo cuando ya se navega por HTTPS
 <IfModule mod_headers.c>
     Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains" env=HTTPS
-    Header always unset X-Powered-By
+    Header unset X-Powered-By
 </IfModule>
 
 # Ocultar la version de PHP en las cabeceras (solo si PHP va como modulo Apache)
