@@ -12,6 +12,12 @@ define('DB_PASS', getenv('DB_PASS') ?: '');
 // En produccion define DB_HOST, DB_NAME, DB_USER y DB_PASS como variables de
 // entorno, o cambia aqui los valores por defecto.
 
+// --- Datos privados de Facebook (opcional) ---
+// Rellena includes/facebook-secreto.php con tu token; si no existe, no pasa nada.
+if (is_file(__DIR__ . '/facebook-secreto.php')) {
+    require_once __DIR__ . '/facebook-secreto.php';
+}
+
 // --- Rutas base (dejar como estan) ---
 define('BASE_URL', '');                 // '' si el sitio esta en la raiz
 define('DIR_UPLOADS', __DIR__ . '/../uploads');   // carpeta fisica de subidas

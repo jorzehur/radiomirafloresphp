@@ -49,3 +49,6 @@ composer.phar
 # Excepcion: la proteccion anti-PHP de uploads SI debe versionarse
 !/uploads/.htaccess
 !/uploads/.gitkeep
+
+# Datos privados de la API de Facebook (token y ID de pagina)
+includes/facebook-secreto.php
