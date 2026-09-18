@@ -105,9 +105,14 @@ require __DIR__ . '/includes/encabezado.php';
 <div class="formulario formulario--rapido">
     <h2>A&ntilde;adir publicaci&oacute;n de Facebook</h2>
     <p class="ayuda">
-        Pega el enlace del post (sirve tambi&eacute;n el de "Compartir") y pulsa Guardar.
-        Se a&ntilde;ade con la fecha de hoy y aparece la primera en la portada.
-        Si quieres, luego le pones t&iacute;tulo y categor&iacute;a.
+        <strong>C&oacute;mo copiar el enlace:</strong> abre la publicaci&oacute;n en Facebook y pulsa la
+        <strong>fecha que aparece encima del post</strong> (o los tres puntos &rarr; <em>Copiar enlace</em>).
+        Pega aqu&iacute; lo que te copie: vale tanto el enlace corto de "Compartir" como el largo que
+        acaba en <code>pfbid...</code>.
+    </p>
+    <p class="ayuda">
+        La web lo convierte sola, comprueba que Facebook deja mostrarlo y lo publica con la fecha de hoy.
+        Si el post es privado o se ha borrado, te avisa y no lo guarda.
     </p>
     <form method="post" action="index.php">
         <?= csrf_campo() ?>
