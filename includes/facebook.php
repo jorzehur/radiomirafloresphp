@@ -19,9 +19,14 @@ function facebook_api(string $consulta): array {
         return array();
     }
 
-    $url = 'https://graph.facebook.com/v21.0/' . ltrim($consulta, '/')
-         . (strpos($consulta, '?') === false ? '?' : '&')
-         . 'access_token=' . urlencode(trim((string) FB_TOKEN));
+    // Se admite una consulta normal o una URL completa (para seguir la paginacion)
+    $url = (strpos($consulta, 'http') === 0)
+        ? $consulta
+        : 'https://graph.facebook.com/v21.0/' . ltrim($consulta, '/');
+
+    if (strpos($url, 'access_token=') === false) {
+        $url .= (strpos($url, '?') === false ? '?' : '&') . 'access_token=' . urlencode(trim((string) FB_TOKEN));
+    }
 
     $ch = curl_init($url);
     curl_setopt_array($ch, [
@@ -90,4 +95,44 @@ function facebook_titulo_desde_texto(string $texto): string {
         $corte = mb_substr($corte, 0, $espacio);
     }
     return rtrim($corte, " ,;:.-") . '...';
+}
+/**
+ * Busca una publicacion por el principio de su texto, recorriendo hacia atras
+ * las paginas de la API (los enlaces "pfbid" no los acepta la API).
+ * Devuelve array vacio si no la encuentra.
+ */
+function facebook_buscar_post_por_texto(string $inicio, int $paginasMax = 5): array {
+    $inicio = trim($inicio);
+    if (!facebook_configurado() || $inicio === '') {
+        return array();
+    }
+
+    $paginasMax = max(1, min(10, $paginasMax));
+    $consulta   = trim((string) FB_PAGE_ID)
+        . '/posts?fields=id,message,created_time,permalink_url,full_picture&limit=100';
+
+    for ($pagina = 0; $pagina < $paginasMax; $pagina++) {
+        $datos = facebook_api($consulta);
+        $lista = $datos['data'] ?? array();
+
+        foreach ($lista as $p) {
+            $texto = trim(preg_replace('/\s+/', ' ', (string) ($p['message'] ?? '')));
+            if ($texto !== '' && mb_substr($texto, 0, 50) === $inicio) {
+                return array(
+                    'texto'  => $texto,
+                    'imagen' => (string) ($p['full_picture'] ?? ''),
+                    'fecha'  => substr((string) ($p['created_time'] ?? ''), 0, 10),
+                    'url'    => (string) ($p['permalink_url'] ?? ''),
+                );
+            }
+        }
+
+        $siguiente = (string) ($datos['paging']['next'] ?? '');
+        if ($siguiente === '' || empty($lista)) {
+            break;
+        }
+        $consulta = $siguiente;
+    }
+
+    return array();
 }

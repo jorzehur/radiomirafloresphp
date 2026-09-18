@@ -36,12 +36,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['traer_datos'])) {
                 $inicio   = mb_substr(trim((string) $extracto['texto']), 0, 50);
 
                 if ($inicio !== '') {
-                    foreach (facebook_publicaciones(100) as $publicacion) {
-                        if (mb_substr($publicacion['texto'], 0, 50) === $inicio) {
-                            $datos['texto']  = $publicacion['texto'];
-                            $datos['imagen'] = $publicacion['imagen'];
-                            break;
-                        }
+                    $encontrada = facebook_buscar_post_por_texto($inicio);
+                    if (!empty($encontrada['texto'])) {
+                        $datos['texto']  = $encontrada['texto'];
+                        $datos['imagen'] = $encontrada['imagen'];
                     }
                 }
                 if ($datos['texto'] === '') {
