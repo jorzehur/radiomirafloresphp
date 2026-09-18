@@ -73,3 +73,20 @@ Options -Indexes
 <IfModule php_module>
     php_flag expose_php off
 </IfModule>
+
+# ------------------------------------------------------------
+#  El repositorio de git NUNCA debe ser descargable por web
+#  (.git/config, .git/HEAD... expondrian todo el codigo fuente)
+# ------------------------------------------------------------
+<IfModule mod_alias.c>
+    RedirectMatch 404 (?i)/\.git
+</IfModule>
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule (?i)(^|/)\.git - [F,L]
+</IfModule>
+
+# Otros archivos que no deben descargarse nunca
+<FilesMatch "^(\.env.*|\.gitignore|\.user\.ini|.*\.(sql|bak|old|log|zip|sh|lock|dist|orig))$">
+    Require all denied
+</FilesMatch>
