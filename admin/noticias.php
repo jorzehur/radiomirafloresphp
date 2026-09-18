@@ -27,7 +27,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['traer_datos'])) {
         if (!$fila || empty($fila['url_facebook'])) {
             $error = 'Esa noticia no tiene enlace de Facebook.';
         } else {
-            $datos   = facebook_datos_post($fila['url_facebook']);
+            // 1) Con token configurado se busca el TEXTO COMPLETO en la API.
+            //    Los enlaces guardados usan "pfbid", que la API no reconoce, asi que
+            //    se localiza la publicacion comparando el principio del texto.
+            $datos = array('texto' => '', 'imagen' => '');
+            if (facebook_configurado()) {
+                $extracto = facebook_datos_post($fila['url_facebook']);
+                $inicio   = mb_substr(trim((string) $extracto['texto']), 0, 50);
+
+                if ($inicio !== '') {
+                    foreach (facebook_publicaciones(100) as $publicacion) {
+                        if (mb_substr($publicacion['texto'], 0, 50) === $inicio) {
+                            $datos['texto']  = $publicacion['texto'];
+                            $datos['imagen'] = $publicacion['imagen'];
+                            break;
+                        }
+                    }
+                }
+                if ($datos['texto'] === '') {
+                    $datos = $extracto;   // ultimo recurso: el extracto del enlace
+                }
+            } else {
+                // 2) Sin token: solo se puede usar el extracto del enlace
+                $datos = facebook_datos_post($fila['url_facebook']);
+            }
             $cambios = array();
 
             if (!empty($datos['texto'])) {

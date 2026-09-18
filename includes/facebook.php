@@ -53,7 +53,7 @@ function facebook_publicaciones(int $limite = 5): array {
         return array();
     }
 
-    $limite = max(1, min(25, $limite));
+    $limite = max(1, min(100, $limite));
     $datos  = facebook_api(trim((string) FB_PAGE_ID)
         . '/posts?fields=id,message,created_time,permalink_url,full_picture&limit=' . $limite);
 
