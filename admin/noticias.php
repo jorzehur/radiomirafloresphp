@@ -49,6 +49,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['borrar'])) {
             $url_facebook = facebook_resolver($url_facebook);
             if (facebook_post_embed($url_facebook) === '') {
                 $error = 'La URL de Facebook no es válida. Pega el enlace de la publicación.';
+            } elseif (!facebook_post_disponible($url_facebook)) {
+                $error = "Facebook dice que esa publicaci\u{00F3}n ya no est\u{00E1} disponible (se ha eliminado o es privada). Comprueba que el post sea p\u{00FA}blico y copia el enlace desde la fecha del post.";
             } elseif (mb_strlen($url_facebook) > 255) {
                 $error = 'La URL de Facebook es demasiado larga (máx. 255 caracteres).';
             }

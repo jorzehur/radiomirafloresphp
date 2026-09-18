@@ -235,3 +235,52 @@ function fecha_larga(?string $fecha): string {
               'julio','agosto','septiembre','octubre','noviembre','diciembre'];
     return date('j', $ts) . ' de ' . $meses[(int)date('n', $ts) - 1] . ' de ' . date('Y', $ts);
 }
+
+/**
+ * Comprueba, preguntando al propio Facebook, que una publicacion se puede
+ * incrustar de verdad (que no se haya borrado ni sea privada).
+ * Si no hay red o Facebook no responde, devuelve true para no bloquear el guardado.
+ */
+function facebook_post_disponible(string $url): bool {
+    if (!function_exists('curl_init')) {
+        return true;
+    }
+
+    $plugin = facebook_post_embed($url);
+    if ($plugin === '') {
+        return false;
+    }
+
+    $ch = curl_init($plugin);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_MAXREDIRS      => 3,
+        CURLOPT_CONNECTTIMEOUT => 6,
+        CURLOPT_TIMEOUT        => 12,
+        CURLOPT_SSL_VERIFYPEER => true,
+        CURLOPT_USERAGENT      => 'Mozilla/5.0 (compatible; RadioMiraflores/1.0)',
+    ]);
+    $html = curl_exec($ch);
+    $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($html === false || $code !== 200) {
+        return true;   // no se pudo comprobar: no bloqueamos nada
+    }
+
+    // Respuestas con las que Facebook avisa de que el post no se puede mostrar
+    $avisos = [
+        "ya no est\u{00E1} disponible",
+        "isn't available",
+        "no se puede mostrar",
+        "Este contenido no est\u{00E1} disponible",
+    ];
+    foreach ($avisos as $texto) {
+        if (stripos((string) $html, $texto) !== false) {
+            return false;
+        }
+    }
+
+    return true;
+}

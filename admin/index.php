@@ -27,6 +27,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url_facebook_rapida']
 
             if (facebook_post_embed($url) === '') {
                 $error = "Esa URL no es una publicaci\u{00F3}n de Facebook. Copiala desde el propio post con Compartir > Copiar enlace.";
+            } elseif (!facebook_post_disponible($url)) {
+                $error = "Facebook dice que esa publicaci\u{00F3}n ya no est\u{00E1} disponible (se ha eliminado o es privada). Abre el post en tu p\u{00E1}gina, comprueba que sea p\u{00FA}blico y copia el enlace desde la fecha del post.";
             } elseif (mb_strlen($url) > 255) {
                 $error = 'La URL es demasiado larga.';
             } else {
