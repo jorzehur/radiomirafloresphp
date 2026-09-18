@@ -323,3 +323,10 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 .lateral nav button.salir:hover { background: #222; color: #fff; border-left-color: var(--acento); }
 .form-salir { display: block; }
+
+/* Alta rapida de publicaciones de Facebook desde el Dashboard */
+.formulario--rapido { border-color: var(--acento); }
+.formulario--rapido > h2 { margin-top: 0; }
+.formulario--rapido .ayuda { color: var(--texto-suave); font-size: 0.85rem; margin-bottom: 14px; }
+.alerta__acciones { margin-left: 10px; }
+.alerta__acciones a { white-space: nowrap; }
