@@ -280,3 +280,46 @@ a { color: var(--acento); }
 
 /* Formulario POST de borrado (en linea, junto a Editar) */
 .form-borrar { display: inline; }
+
+/* =====================================================================
+   Mejoras de accesibilidad del panel (auditoria)
+   ===================================================================== */
+
+/* Enlaces de texto: rojo mas claro para superar 4.5:1 sobre fondo oscuro */
+.contenido a:not(.boton) { color: #ef5350; }
+
+/* Foco visible tambien en el panel */
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+    outline: 2px solid #ef5350;
+    outline-offset: 2px;
+}
+
+/* Botones: oscurecer en lugar de bajar la opacidad (mantiene el contraste) */
+.boton:hover { opacity: 1; background: #b71c1c; }
+.boton--secundario:hover { background: #444; }
+.boton--peligro:hover { background: #8e0000; }
+
+/* iOS hace zoom al enfocar campos de menos de 16px */
+.campo input[type="text"], .campo input[type="password"], .campo input[type="email"],
+.campo input[type="url"], .campo input[type="date"], .campo input[type="color"],
+.campo input[type="number"], .campo select, .campo textarea { font-size: 1rem; }
+
+/* Tablas: scroll horizontal en pantallas estrechas */
+@media (max-width: 900px) {
+    .tabla { display: block; overflow-x: auto; }
+}
+
+/* Boton de cerrar sesion dentro del menu lateral */
+.lateral nav button.salir {
+    background: none;
+    border: 0;
+    border-left: 3px solid transparent;
+    color: #ef9a9a;
+    cursor: pointer;
+    font: inherit;
+    padding: 12px 20px;
+    text-align: left;
+    width: 100%;
+}
+.lateral nav button.salir:hover { background: #222; color: #fff; border-left-color: var(--acento); }
+.form-salir { display: block; }

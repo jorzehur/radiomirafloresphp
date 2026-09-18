@@ -33,7 +33,10 @@ $menuItems = [
             <?php foreach ($menuItems as $clave => $item): ?>
                 <a href="<?= e($item[0]) ?>" class="<?= $paginaActiva === $clave ? 'activo' : '' ?>"><?= e($item[1]) ?></a>
             <?php endforeach; ?>
-            <a class="salir" href="logout.php">Cerrar sesión</a>
+            <form class="form-salir" method="post" action="logout.php">
+                <?= csrf_campo() ?>
+                <button class="salir" type="submit">Cerrar sesión</button>
+            </form>
         </nav>
     </aside>
     <main class="contenido">

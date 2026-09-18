@@ -15,10 +15,10 @@ function e(?string $texto): string {
 /**
  * Devuelve un valor de configuracion del sitio (o un valor por defecto).
  */
-function config(string $clave, string $defecto = ''): string {
+function config_cache(bool $recargar = false): array {
     static $cache = null;
 
-    if ($cache === null) {
+    if ($cache === null || $recargar) {
         $cache = [];
         try {
             $stmt = db()->query('SELECT clave, valor FROM configuracion');
@@ -30,7 +30,25 @@ function config(string $clave, string $defecto = ''): string {
         }
     }
 
+    return $cache;
+}
+
+/**
+ * Devuelve un valor de configuracion del sitio (o un valor por defecto).
+ */
+function config(string $clave, string $defecto = ''): string {
+    $cache = config_cache();
     return $cache[$clave] ?? $defecto;
+}
+
+/**
+ * Guarda un valor de configuracion y refresca la cache en memoria.
+ */
+function config_guardar(string $clave, string $valor): void {
+    db()->prepare('INSERT INTO configuracion (clave, valor) VALUES (?, ?)
+                   ON DUPLICATE KEY UPDATE valor = VALUES(valor)')
+        ->execute([$clave, $valor]);
+    config_cache(true);
 }
 
 /**

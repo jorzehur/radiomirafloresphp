@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($usuario === '' || $password === '') {
             $error = 'Ingresa usuario y contraseña.';
-        } elseif (!empty($_SESSION['login_intentos']['hasta']) && $_SESSION['login_intentos']['hasta'] > time()) {
+        } elseif (login_espera($usuario) > 0) {
             $error = 'Demasiados intentos fallidos. Espera unos minutos e inténtalo de nuevo.';
         } elseif (intentar_login($usuario, $password)) {
             redirigir('index.php');

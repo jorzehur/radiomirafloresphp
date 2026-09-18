@@ -61,6 +61,15 @@ function enlace_pagina(int $p, string $catSlug): string {
     return 'noticias.php?' . http_build_query($q);
 }
 
+$titulo_pagina      = 'Noticias';
+$descripcion_pagina = 'Todas las noticias y publicaciones de ' . config('nombre_sitio', 'Radio Miraflores') . '.';
+$url_canonica_ruta  = $categoria
+    ? 'noticias.php?categoria=' . rawurlencode((string) $categoria['slug'])
+    : 'noticias.php';
+if ($pagina > 1) {
+    $titulo_pagina .= ' - pagina ' . $pagina;
+}
+
 require __DIR__ . '/includes/header.php';
 ?>
 

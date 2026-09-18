@@ -4,7 +4,7 @@
 // ============================================================
 require_once __DIR__ . '/includes/funciones.php';
 
-$slug = $_GET['slug'] ?? '';
+$slug = (string) ($_GET['slug'] ?? '');
 
 $stmt = db()->prepare(
     'SELECT n.*, c.nombre AS categoria
@@ -17,6 +17,19 @@ $noticia = $stmt->fetch();
 
 if (!$noticia) {
     http_response_code(404);
+    $titulo_pagina  = 'Noticia no encontrada';
+    $robots_noindex = true;
+} else {
+    $titulo_pagina      = $noticia['titulo'];
+    $descripcion_pagina = trim((string) ($noticia['resumen'] ?? ''));
+    if ($descripcion_pagina === '') {
+        $descripcion_pagina = mb_substr(trim(strip_tags((string) $noticia['contenido'])), 0, 160);
+    }
+    $og_tipo           = 'article';
+    $url_canonica_ruta = 'noticia.php?slug=' . rawurlencode((string) $noticia['slug']);
+    if (!empty($noticia['imagen'])) {
+        $og_imagen_archivo = $noticia['imagen'];
+    }
 }
 
 require __DIR__ . '/includes/header.php';

@@ -19,10 +19,10 @@ function db(): PDO {
         try {
             $pdo = new PDO($dsn, DB_USER, DB_PASS, $opciones);
         } catch (PDOException $e) {
-            // No revelar datos internos al visitante
-            die('Error de conexion con la base de datos. '
-                . 'Verifica que MySQL este activo y que la base "'
-                . DB_NAME . '" exista (importa database.sql).');
+            // El detalle va al log del servidor, al visitante no se le revela nada
+            error_log('Radio Miraflores - error de conexion a la base de datos: ' . $e->getMessage());
+            http_response_code(503);
+            die("El sitio no est\u{00E1} disponible en este momento. Int\u{00E9}ntalo de nuevo m\u{00E1}s tarde.");
         }
     }
 

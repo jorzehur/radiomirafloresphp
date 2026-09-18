@@ -35,8 +35,8 @@ function requerir_login(): void {
 function intentar_login(string $usuario, string $password): bool {
     $intentos = $_SESSION['login_intentos'] ?? ['n' => 0, 'hasta' => 0];
 
-    // Bloqueado temporalmente por demasiados intentos fallidos
-    if (($intentos['hasta'] ?? 0) > time()) {
+    // Bloqueado temporalmente por demasiados intentos fallidos (sesion o base de datos)
+    if (($intentos['hasta'] ?? 0) > time() || login_espera($usuario) > 0) {
         return false;
     }
 
@@ -46,6 +46,7 @@ function intentar_login(string $usuario, string $password): bool {
 
     if ($fila && password_verify($password, $fila['password'])) {
         unset($_SESSION['login_intentos']);
+        login_limpiar($usuario);
         // Regenerar id de sesion para evitar fijacion de sesion
         session_regenerate_id(true);
         $_SESSION['usuario_id'] = (int)$fila['id'];
@@ -60,6 +61,10 @@ function intentar_login(string $usuario, string $password): bool {
         $intentos['n'] = $n;
     }
     $_SESSION['login_intentos'] = $intentos;
+
+    // Registro en el servidor por IP: el contador de sesion se evita
+    // borrando la cookie, este no.
+    login_registrar_fallo($usuario);
 
     sleep(1); // ralentiza los intentos automáticos
 
@@ -77,4 +82,76 @@ function cerrar_sesion(): void {
             $p['path'], $p['domain'], $p['secure'], $p['httponly']);
     }
     session_destroy();
+}
+
+/**
+ * IP del visitante (recortada al tamano del campo).
+ */
+function login_ip(): string {
+    return substr((string) ($_SERVER['REMOTE_ADDR'] ?? '0.0.0.0'), 0, 45);
+}
+
+/**
+ * Segundos de bloqueo que le quedan a esta IP/usuario (0 = sin bloqueo).
+ * Usa la tabla intentos_login; si no existe, cae al contador de sesion.
+ */
+function login_espera(string $usuario): int {
+    $espera = 0;
+    try {
+        $stmt = db()->prepare('SELECT bloqueado_hasta FROM intentos_login
+                               WHERE ip = ? AND usuario = ? AND bloqueado_hasta > NOW() LIMIT 1');
+        $stmt->execute([login_ip(), mb_substr($usuario, 0, 50)]);
+        $hasta = $stmt->fetchColumn();
+        if ($hasta) {
+            $espera = max(0, strtotime($hasta) - time());
+        }
+        // Ataque con muchos usuarios distintos desde la misma IP
+        $stmt = db()->prepare('SELECT COUNT(*) FROM intentos_login
+                               WHERE ip = ? AND actualizado_en > DATE_SUB(NOW(), INTERVAL 15 MINUTE)');
+        $stmt->execute([login_ip()]);
+        if ((int) $stmt->fetchColumn() > 25) {
+            $espera = max($espera, 300);
+        }
+    } catch (PDOException $e) {
+        $hasta = $_SESSION['login_intentos']['hasta'] ?? 0;
+        if ($hasta > time()) { $espera = max($espera, $hasta - time()); }
+    }
+    return $espera;
+}
+
+/**
+ * Registra un intento fallido (sesion + base de datos) y bloquea a los 5.
+ */
+function login_registrar_fallo(string $usuario): void {
+    $n = (int) ($_SESSION['login_intentos']['n'] ?? 0) + 1;
+    $_SESSION['login_intentos'] = ($n >= 5)
+        ? ['n' => 0, 'hasta' => time() + 300]
+        : ['n' => $n, 'hasta' => 0];
+
+    try {
+        $stmt = db()->prepare('INSERT INTO intentos_login (ip, usuario, intentos, bloqueado_hasta)
+                               VALUES (?, ?, 1, NULL)
+                               ON DUPLICATE KEY UPDATE
+                                   bloqueado_hasta = IF(intentos + 1 >= 5, DATE_ADD(NOW(), INTERVAL 5 MINUTE), bloqueado_hasta),
+                                   intentos = intentos + 1');
+        $stmt->execute([login_ip(), mb_substr($usuario, 0, 50)]);
+        if (random_int(1, 20) === 1) {
+            db()->exec('DELETE FROM intentos_login WHERE actualizado_en < DATE_SUB(NOW(), INTERVAL 2 DAY)');
+        }
+    } catch (PDOException $e) {
+        error_log('No se pudo registrar el intento fallido: ' . $e->getMessage());
+    }
+}
+
+/**
+ * Limpia los intentos al iniciar sesion correctamente.
+ */
+function login_limpiar(string $usuario): void {
+    unset($_SESSION['login_intentos']);
+    try {
+        db()->prepare('DELETE FROM intentos_login WHERE ip = ? AND usuario = ?')
+            ->execute([login_ip(), mb_substr($usuario, 0, 50)]);
+    } catch (PDOException $e) {
+        // Si la tabla no existe, no hay nada que limpiar
+    }
 }

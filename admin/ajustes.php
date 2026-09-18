@@ -100,6 +100,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+config_cache(true); // refrescar los valores recien guardados antes de pintar el formulario
+
 require __DIR__ . '/includes/encabezado.php';
 ?>
 

@@ -58,3 +58,15 @@ El panel trae un usuario por defecto `admin` / `admin123`. Cámbialo al entrar:
 - [ ] Contraseña del panel cambiada y robusta.
 - [ ] HTTPS activado.
 - [ ] Página cargando correctamente con `https://`.
+
+---
+
+## 4. Comprobaciones finales antes de publicar
+
+- [ ] PHP con las extensiones **gd**, **curl**, **pdo_mysql** y **mbstring** activas (sin ellas fallan las subidas, los enlaces de Facebook y algunos textos).
+- [ ] Poner `expose_php = Off` en php.ini (el `.htaccess` ya intenta ocultar `X-Powered-By`).
+- [ ] HTTPS activo: el `.htaccess` ya redirige a `https://` y activa HSTS cuando detecta SSL (en localhost no redirige, para no romper XAMPP).
+- [ ] Importar `database.sql` en el hosting: incluye la tabla `intentos_login`, que es la que bloquea los ataques de fuerza bruta al panel.
+- [ ] Copiar la carpeta `uploads` por FTP (las imagenes no se suben a git).
+- [ ] Cambiar el usuario y la contrasena del panel (no dejar `admin` / `admin123`).
+- [ ] Revisar que `https://tudominio/robots.txt` responde y que `/admin/` no aparece en Google.
