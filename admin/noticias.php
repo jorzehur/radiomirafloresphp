@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['traer_datos'])) {
         $error = 'Token inválido. Inténtalo de nuevo.';
     } else {
         $idTraer = (int) $_POST['traer_datos'];
-        $stmt = db()->prepare('SELECT id, url_facebook, resumen, contenido, imagen FROM noticias WHERE id = ?');
+        $stmt = db()->prepare('SELECT id, url_facebook, resumen, contenido, imagen, fecha_publicacion FROM noticias WHERE id = ?');
         $stmt->execute([$idTraer]);
         $fila = $stmt->fetch();
 
@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['traer_datos'])) {
                 $inicio   = mb_substr(trim((string) $extracto['texto']), 0, 50);
 
                 if ($inicio !== '') {
-                    $encontrada = facebook_buscar_post_por_texto($inicio);
+                    $encontrada = facebook_buscar_post_por_texto($inicio, (string) $fila['fecha_publicacion']);
                     if (!empty($encontrada['texto'])) {
                         $datos['texto']  = $encontrada['texto'];
                         $datos['imagen'] = $encontrada['imagen'];

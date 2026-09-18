@@ -81,6 +81,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url_facebook_rapida']
                                VALUES (?, ?, ?, ?, ?, ?, NULL, 0, ?)')
                     ->execute([$titulo, $slug, $resumen, $texto, $imagen, $url, $hoy]);
 
+                // Limpieza automática: borra las noticias más antiguas que el límite
+                // puesto en Ajustes (y sus imágenes), para no llenar el hosting.
+                noticias_limpiar_antiguas();
+
                 redirigir('index.php?anadida=' . (int) db()->lastInsertId() . ($traido ? '&traido=1' : ''));
             }
         }

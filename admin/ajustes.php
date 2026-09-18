@@ -17,6 +17,7 @@ $camposTexto = [
     'eslogan'       => 'Eslogan',
     'texto_hero'    => 'Texto de la sección Hero',
     'texto_nosotros'=> 'Texto de "Sobre Nosotros"',
+    'dias_conservar' => 'Días que se conservan las noticias (0 = no borrar ninguna)',
     'direccion'     => 'Dirección',
     'telefono'      => 'Teléfono',
     'email'         => 'Correo electrónico',
@@ -35,7 +36,19 @@ $camposColores = [
     'color_acento' => 'Color de acento (botones, enlaces)',
 ];
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+// --- Limpiar imagenes que ya no usa nadie ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['limpiar_huerfanas'])) {
+    if (!csrf_verificar($_POST['csrf_token'] ?? null)) {
+        $error = 'Token inválido. Inténtalo de nuevo.';
+    } else {
+        $borradas = imagenes_huerfanas(true);
+        $mensaje  = $borradas
+            ? 'Se han borrado ' . count($borradas) . ' imágenes que no usaba nadie.'
+            : 'No había ninguna imagen suelta: todas están en uso.';
+    }
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['limpiar_huerfanas'])) {
     if (!csrf_verificar($_POST['csrf_token'] ?? null)) {
         $error = 'Token inválido. Los cambios no se guardaron.';
     } else {
@@ -187,5 +200,38 @@ require __DIR__ . '/includes/encabezado.php';
         <button class="boton" type="submit">Guardar ajustes</button>
     </p>
 </form>
+
+<?php $huerfanas = imagenes_huerfanas(false); ?>
+<div class="formulario">
+    <h2 style="margin-top:0;">Imágenes que ya no usa nadie</h2>
+
+    <?php if (!$huerfanas): ?>
+        <p class="ayuda">Todo en orden: no hay ninguna imagen suelta en la carpeta <code>uploads</code>.</p>
+    <?php else: ?>
+        <p class="ayuda">
+            Hay <strong><?= count($huerfanas) ?></strong> imagen(es) en <code>uploads</code> que no usa ninguna noticia,
+            ningún testimonio, ni el logo, ni el hero, ni "Sobre Nosotros". Puedes borrarlas para liberar espacio.
+        </p>
+        <ul style="color:#999;font-size:0.85rem;margin:0 0 16px 18px;">
+            <?php foreach (array_slice($huerfanas, 0, 20) as $h): ?>
+                <li>
+                    <?= e($h) ?>
+                    <span style="color:#666;">(<?= (int) round(filesize(DIR_UPLOADS . '/' . $h) / 1024) ?> KB)</span>
+                </li>
+            <?php endforeach; ?>
+            <?php if (count($huerfanas) > 20): ?>
+                <li>... y <?= count($huerfanas) - 20 ?> más</li>
+            <?php endif; ?>
+        </ul>
+        <form method="post" action="ajustes.php" onsubmit="return confirm('¿Borrar estas <?= count($huerfanas) ?> imágenes? Esta acción no se puede deshacer.');">
+            <?= csrf_campo() ?>
+            <input type="hidden" name="limpiar_huerfanas" value="1">
+            <button class="boton boton--peligro" type="submit">Borrar las <?= count($huerfanas) ?> imágenes sueltas</button>
+        </form>
+        <p class="ayuda" style="margin-top:12px;">
+            Ojo: si alguna de esas imágenes la subiste tú y quieres conservarla, no pulses el botón.
+        </p>
+    <?php endif; ?>
+</div>
 
 <?php require __DIR__ . '/includes/pie.php'; ?>

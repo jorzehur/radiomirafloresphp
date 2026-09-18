@@ -97,19 +97,44 @@ function facebook_titulo_desde_texto(string $texto): string {
     return rtrim($corte, " ,;:.-") . '...';
 }
 /**
- * Busca una publicacion por el principio de su texto, recorriendo hacia atras
- * las paginas de la API (los enlaces "pfbid" no los acepta la API).
- * Devuelve array vacio si no la encuentra.
+ * Busca una publicacion por el principio de su texto (los enlaces "pfbid" no
+ * los acepta la API). Si se le pasa una fecha, salta directo a esa epoca con
+ * "until": la pagina publica decenas de veces al dia y recorrer hacia atras
+ * seria inviable. Devuelve array vacio si no la encuentra.
  */
-function facebook_buscar_post_por_texto(string $inicio, int $paginasMax = 5): array {
+function facebook_buscar_post_por_texto(string $inicio, string $fechaReferencia = '', int $paginasMax = 3): array {
     $inicio = trim($inicio);
     if (!facebook_configurado() || $inicio === '') {
         return array();
     }
 
+    $campos = 'fields=id,message,created_time,permalink_url,full_picture';
+    $base   = trim((string) FB_PAGE_ID) . '/posts?' . $campos . '&limit=100';
+
+    // 1) Atajo por fecha: se prueba con unos dias de margen por si la fecha
+    //    guardada no coincide exactamente con la de la publicacion.
+    if ($fechaReferencia !== '' && strtotime($fechaReferencia) !== false) {
+        foreach (array(2, 3, 4) as $dias) {
+            $hasta = date('Y-m-d', strtotime($fechaReferencia . ' +' . $dias . ' days'));
+            $datos = facebook_api($base . '&until=' . $hasta);
+
+            foreach (($datos['data'] ?? array()) as $p) {
+                $texto = trim(preg_replace('/\s+/', ' ', (string) ($p['message'] ?? '')));
+                if ($texto !== '' && mb_substr($texto, 0, 50) === $inicio) {
+                    return array(
+                        'texto'  => $texto,
+                        'imagen' => (string) ($p['full_picture'] ?? ''),
+                        'fecha'  => substr((string) ($p['created_time'] ?? ''), 0, 10),
+                        'url'    => (string) ($p['permalink_url'] ?? ''),
+                    );
+                }
+            }
+        }
+    }
+
+    // 2) Ultimo recurso: recorrer hacia atras desde lo mas reciente
     $paginasMax = max(1, min(10, $paginasMax));
-    $consulta   = trim((string) FB_PAGE_ID)
-        . '/posts?fields=id,message,created_time,permalink_url,full_picture&limit=100';
+    $consulta   = $base;
 
     for ($pagina = 0; $pagina < $paginasMax; $pagina++) {
         $datos = facebook_api($consulta);

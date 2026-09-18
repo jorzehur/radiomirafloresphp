@@ -8,7 +8,7 @@ require_once __DIR__ . '/includes/funciones.php';
 $videos = db()->query('SELECT id, titulo, url_video, plataforma, tipo, orden FROM videos WHERE activo = 1 ORDER BY orden ASC, id DESC')->fetchAll();
 
 $noticias = db()->query(
-    'SELECT n.id, n.titulo, n.slug, n.resumen, n.imagen, n.url_facebook, n.fecha_publicacion, c.nombre AS categoria
+    'SELECT n.id, n.titulo, n.slug, n.resumen, n.contenido, n.imagen, n.url_facebook, n.fecha_publicacion, c.nombre AS categoria
      FROM noticias n
      LEFT JOIN categorias c ON c.id = n.categoria_id
      ORDER BY n.destacada DESC, n.fecha_publicacion DESC, n.id DESC
@@ -113,9 +113,12 @@ require __DIR__ . '/includes/header.php';
                                 <?php if (!empty($noticia['resumen'])): ?>
                                     <p class="noticia__resumen"><?= e($noticia['resumen']) ?></p>
                                 <?php endif; ?>
-                                <p class="noticia__boton">
-                                    <a class="boton-fb" href="<?= e($noticia['url_facebook']) ?>" target="_blank" rel="noopener">Leer la noticia completa en Facebook</a>
-                                </p>
+                                <div class="noticia__acciones">
+                                    <?php if (trim((string) $noticia['contenido']) !== '' || !empty($noticia['imagen'])): ?>
+                                        <a class="boton-fb" href="noticia.php?slug=<?= e($noticia['slug']) ?>">Leer la noticia completa aqu&iacute;</a>
+                                    <?php endif; ?>
+                                    <a class="boton-fb boton-fb--secundario" href="<?= e($noticia['url_facebook']) ?>" target="_blank" rel="noopener">Ver en Facebook &nearr;</a>
+                                </div>
                                 <time class="noticia__fecha"><?= fecha_larga($noticia['fecha_publicacion']) ?></time>
                             </div>
                         </div>

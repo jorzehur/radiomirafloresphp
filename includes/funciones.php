@@ -420,6 +420,22 @@ function guardar_imagen_desde_url(string $url): ?string {
     imagealphablending($img, false);
     imagesavealpha($img, true);
 
+    // Reducir si viene muy grande: las fotos de Facebook pueden llegar a 4000 px
+    // y ocuparian medio megabyte para nada. Se deja como maximo 1600 px de lado.
+    $ladoMax = 1600;
+    $ancho   = imagesx($img);
+    $alto    = imagesy($img);
+    if ($ancho > $ladoMax || $alto > $ladoMax) {
+        $factor = min($ladoMax / $ancho, $ladoMax / $alto);
+        $nuevoAncho = max(1, (int) round($ancho * $factor));
+        $nuevoAlto  = max(1, (int) round($alto * $factor));
+        $reducida   = @imagescale($img, $nuevoAncho, $nuevoAlto, IMG_BICUBIC);
+        if ($reducida !== false) {
+            imagedestroy($img);
+            $img = $reducida;
+        }
+    }
+
     if (!is_dir(DIR_UPLOADS)) {
         @mkdir(DIR_UPLOADS, 0755, true);
     }
@@ -428,4 +444,90 @@ function guardar_imagen_desde_url(string $url): ?string {
     imagedestroy($img);
 
     return $guardado ? $nombre : null;
+}
+
+/**
+ * Borra las noticias mas antiguas que $dias (y sus imagenes) para que la base
+ * y la carpeta uploads no crezcan sin control. Se configura en Ajustes con la
+ * clave "dias_conservar". Con 0 (o sin configurar) no borra nada.
+ * Devuelve cuantas noticias ha borrado.
+ */
+function noticias_limpiar_antiguas(?int $dias = null): int {
+    if ($dias === null) {
+        $dias = (int) config('dias_conservar', 0);
+    }
+    if ($dias <= 0) {
+        return 0;
+    }
+
+    $limite = date('Y-m-d', strtotime('-' . $dias . ' days'));
+
+    // Primero las imagenes, para no dejar archivos huerfanos en uploads
+    $stmt = db()->prepare("SELECT imagen FROM noticias WHERE fecha_publicacion < ? AND imagen IS NOT NULL AND imagen <> ''");
+    $stmt->execute([$limite]);
+    foreach ($stmt->fetchAll() as $fila) {
+        $nombre = (string) $fila['imagen'];
+        if ($nombre !== '' && strpos($nombre, '..') === false && is_file(DIR_UPLOADS . '/' . $nombre)) {
+            @unlink(DIR_UPLOADS . '/' . $nombre);
+        }
+    }
+
+    $borrar = db()->prepare('DELETE FROM noticias WHERE fecha_publicacion < ?');
+    $borrar->execute([$limite]);
+
+    return $borrar->rowCount();
+}
+
+/**
+ * Busca en uploads las imagenes que ya no usa nadie (ni las noticias, ni los
+ * testimonios, ni el logo, ni el hero, ni "sobre nosotros").
+ * Con $borrar = true las elimina. Devuelve la lista de nombres de archivo.
+ */
+function imagenes_huerfanas(bool $borrar = false): array {
+    if (!is_dir(DIR_UPLOADS)) {
+        return array();
+    }
+
+    // 1) Nombres de archivo que estan en uso
+    $enUso = array();
+
+    foreach (db()->query("SELECT imagen FROM noticias WHERE imagen IS NOT NULL AND imagen <> ''")->fetchAll() as $f) {
+        $enUso[(string) $f['imagen']] = true;
+    }
+    foreach (db()->query("SELECT imagen FROM testimonios WHERE imagen IS NOT NULL AND imagen <> ''")->fetchAll() as $f) {
+        $enUso[(string) $f['imagen']] = true;
+    }
+    foreach (db()->query("SELECT valor FROM configuracion WHERE clave IN ('logo','imagen_hero','imagen_nosotros') AND valor <> ''")->fetchAll() as $f) {
+        $enUso[(string) $f['valor']] = true;
+    }
+
+    // 2) Archivos de uploads que no estan en esa lista
+    $extensiones = array('webp', 'jpg', 'jpeg', 'png', 'gif', 'svg');
+    $huerfanas   = array();
+
+    foreach ((scandir(DIR_UPLOADS) ?: array()) as $archivo) {
+        if ($archivo === '.' || $archivo === '..') {
+            continue;
+        }
+
+        $ruta = DIR_UPLOADS . '/' . $archivo;
+        if (!is_file($ruta)) {
+            continue;
+        }
+        if (!in_array(strtolower(pathinfo($archivo, PATHINFO_EXTENSION)), $extensiones, true)) {
+            continue;   // .htaccess y demas no se tocan
+        }
+        if (isset($enUso[$archivo])) {
+            continue;
+        }
+
+        $huerfanas[] = $archivo;
+        if ($borrar) {
+            @unlink($ruta);
+        }
+    }
+
+    sort($huerfanas);
+
+    return $huerfanas;
 }
