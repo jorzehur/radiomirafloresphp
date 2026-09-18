@@ -70,3 +70,16 @@ document.addEventListener('DOMContentLoaded', function () {
         }, { once: true });
     }
 });
+// ============================================================
+//  Si la miniatura no existe (video borrado o directo terminado)
+//  se oculta y queda el recuadro negro con el boton de play
+// ============================================================
+document.addEventListener('DOMContentLoaded', function () {
+    var miniaturas = document.querySelectorAll('.video-fachada__imagen');
+
+    for (var i = 0; i < miniaturas.length; i++) {
+        miniaturas[i].addEventListener('error', function () {
+            this.className = 'video-fachada__imagen video-fachada__imagen--error';
+        });
+    }
+});

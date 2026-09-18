@@ -5,6 +5,9 @@
 
 require_once __DIR__ . '/funciones.php';
 
+// El panel de administracion si necesita sesion
+iniciar_sesion();
+
 /**
  * Devuelve el usuario logueado (o null si no hay sesion).
  */

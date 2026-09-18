@@ -16,7 +16,10 @@ define('DIR_UPLOADS', __DIR__ . '/../uploads');   // carpeta fisica de subidas
 define('URL_UPLOADS', 'uploads');                 // ruta web de subidas
 
 // --- Sesion ---
-if (session_status() === PHP_SESSION_NONE) {
+// Las paginas publicas NO inician sesion: solo la necesita el panel. Asi cada
+// visitante anonimo no genera un archivo de sesion ni recibe cookie.
+function iniciar_sesion(): void {
+    if (session_status() === PHP_SESSION_NONE) {
     // Cookies seguras: HttpOnly (evita acceso desde JS) y SameSite (evita CSRF).
     // "secure" se activa solo cuando el sitio corre por HTTPS (produccion).
     $cookieSegura = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');

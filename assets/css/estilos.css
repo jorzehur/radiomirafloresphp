@@ -779,3 +779,5 @@ button:focus-visible {
     height: 72px;
     filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.55));
 }
+/* Miniatura no disponible: recuadro negro con el boton de play */
+.video-fachada__imagen--error { display: none; }
