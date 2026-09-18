@@ -70,3 +70,26 @@ El panel trae un usuario por defecto `admin` / `admin123`. Cámbialo al entrar:
 - [ ] Copiar la carpeta `uploads` por FTP (las imagenes no se suben a git).
 - [ ] Cambiar el usuario y la contrasena del panel (no dejar `admin` / `admin123`).
 - [ ] Revisar que `https://tudominio/robots.txt` responde y que `/admin/` no aparece en Google.
+
+---
+
+## 5. Si no puedes entrar al panel (recuperar la contrasena)
+
+No hay recuperacion por email: se hace desde la consola, en la carpeta del proyecto.
+
+En local (XAMPP):
+
+```
+C:\xampp\php\php.exe reset-password.php MiClaveSegura123 admin
+```
+
+En el hosting, si tienes acceso SSH:
+
+```
+php reset-password.php MiClaveSegura123 admin
+```
+
+- El primer argumento es la contrasena nueva (minimo 8 caracteres) y el segundo el usuario (por defecto `admin`).
+- Ejecutado sin argumentos, muestra los usuarios que existen.
+- El archivo **solo funciona desde la consola**: si alguien lo abre en el navegador responde 403, y ademas el `.htaccess` lo bloquea.
+- El usuario por defecto de `database.sql` es `admin` / `admin123`. **Cambialo** en cuanto entres (menu "Mi cuenta").

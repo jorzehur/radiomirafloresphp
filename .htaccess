@@ -90,3 +90,8 @@ Options -Indexes
 <FilesMatch "^(\.env.*|\.gitignore|\.user\.ini|.*\.(sql|bak|old|log|zip|sh|lock|dist|orig))$">
     Require all denied
 </FilesMatch>
+
+# El script de rescate de contrasena solo se ejecuta desde la consola
+<FilesMatch "^reset-password\.php$">
+    Require all denied
+</FilesMatch>
