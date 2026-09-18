@@ -4,6 +4,7 @@
 // ============================================================
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/includes/admin-funciones.php';
+require_once __DIR__ . '/../includes/facebook.php';
 requerir_login();
 
 $paginaActiva = 'dashboard';
@@ -156,6 +157,39 @@ require __DIR__ . '/includes/encabezado.php';
         <button class="boton" type="submit">Guardar y publicar</button>
     </form>
 </div>
+
+<?php if (facebook_configurado()): ?>
+    <?php $postsFb = isset($_GET['traer']) ? facebook_publicaciones(5) : array(); ?>
+    <div class="formulario">
+        <h2>Traer mis &uacute;ltimas publicaciones de Facebook</h2>
+        <p class="ayuda">
+            Aqu&iacute; el texto llega <strong>completo</strong>, tal como lo escribiste en el post
+            (Facebook solo da un extracto cuando se lee el enlace suelto).
+        </p>
+
+        <?php if (!isset($_GET['traer'])): ?>
+            <p><a class="boton" href="index.php?traer=1">Traer mis &uacute;ltimas publicaciones</a></p>
+        <?php elseif (!$postsFb): ?>
+            <div class="alerta alerta--error">No he podido leerlas. <?= e(facebook_error()) ?></div>
+            <p><a class="boton boton--secundario" href="index.php">Volver</a></p>
+        <?php else: ?>
+            <?php foreach ($postsFb as $p): ?>
+                <div class="tarjeta" style="margin-bottom:14px;padding:14px;">
+                    <div class="tarjeta__etiqueta"><?= e($p['fecha']) ?> &middot; <?= (int) mb_strlen($p['texto']) ?> caracteres</div>
+                    <p style="margin:8px 0;font-size:0.9rem;color:#ccc;"><?= e(mb_substr($p['texto'], 0, 280)) ?><?= mb_strlen($p['texto']) > 280 ? '...' : '' ?></p>
+                    <form class="form-borrar" method="post" action="index.php">
+                        <?= csrf_campo() ?>
+                        <input type="hidden" name="url_facebook_rapida" value="<?= e($p['url']) ?>">
+                        <input type="hidden" name="titulo_rapido" value="<?= e($p['titulo']) ?>">
+                        <input type="hidden" name="texto_rapido" value="<?= e($p['texto']) ?>">
+                        <button class="boton boton--pequeno" type="submit">A&ntilde;adir esta</button>
+                    </form>
+                </div>
+            <?php endforeach; ?>
+            <p><a class="boton boton--secundario" href="index.php">Volver</a></p>
+        <?php endif; ?>
+    </div>
+<?php endif; ?>
 
 <div class="tarjetas">
     <?php foreach ($contadores as $etiqueta => $numero): ?>
