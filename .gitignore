@@ -45,3 +45,7 @@ composer.phar
 # Build
 /build/
 /dist/
+
+# Excepcion: la proteccion anti-PHP de uploads SI debe versionarse
+!/uploads/.htaccess
+!/uploads/.gitkeep

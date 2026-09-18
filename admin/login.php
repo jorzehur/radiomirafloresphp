@@ -15,8 +15,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!csrf_verificar($_POST['csrf_token'] ?? null)) {
         $error = 'Sesión expirada. Inténtalo de nuevo.';
     } else {
-        $usuario  = trim($_POST['usuario'] ?? '');
-        $password = $_POST['password'] ?? '';
+        $usuario  = trim((string)($_POST['usuario'] ?? ''));
+        $password = (string)($_POST['password'] ?? '');
 
         if ($usuario === '' || $password === '') {
             $error = 'Ingresa usuario y contraseña.';

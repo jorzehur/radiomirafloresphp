@@ -13,58 +13,6 @@ function e(?string $texto): string {
 }
 
 /**
- * Valida que una URL tenga un formato seguro y esperado.
- * Solo permite dominios conocidos o URLs bien formateadas.
- */
-function validar_url(string $url, array $dominios_permitidos = []): bool {
-    // Filtrar URLs vacías o nulas
-    if (empty($url)) {
-        return false;
-    }
-
-    // Agregar prefijo http/https si falta
-    if (!preg_match('|^https?://|i', $url)) {
-        $url = 'https://' . $url;
-    }
-
-    $url = filter_var($url, FILTER_VALIDATE_URL);
-    if ($url === false || $url === '') {
-        return false;
-    }
-
-    // Si se especifican dominios permitidos, validar contra ellos
-    if (!empty($dominios_permitidos)) {
-        $host = parse_url($url, PHP_URL_HOST);
-        if ($host === false) {
-            return false;
-        }
-        $host_lower = strtolower($host);
-        $permitido = false;
-        foreach ($dominios_permitidos as $dom) {
-            $dom_lower = strtolower(trim($dom));
-            if ($host_lower === $dom_lower ||
-                substr($host_lower, -strlen($dom_lower)) === $dom_lower) {
-                $permitido = true;
-                break;
-            }
-        }
-        if (!$permitido) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-/**
- * Obtiene solo el host de una URL para validación
- */
-function obtener_host(string $url): ?string {
-    $parsed = parse_url($url);
-    return $parsed['host'] ?? null;
-}
-
-/**
  * Devuelve un valor de configuracion del sitio (o un valor por defecto).
  */
 function config(string $clave, string $defecto = ''): string {
@@ -90,10 +38,21 @@ function config(string $clave, string $defecto = ''): string {
  * Ej: "Hola Mundo!" -> "hola-mundo"
  */
 function slugify(string $texto): string {
+    // Reemplazar acentos y caracteres especiales del español para slugs legibles
+    $texto = strtr($texto, [
+        'á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ú' => 'u',
+        'Á' => 'a', 'É' => 'e', 'Í' => 'i', 'Ó' => 'o', 'Ú' => 'u',
+        'ñ' => 'n', 'Ñ' => 'n', 'ü' => 'u', 'Ü' => 'u',
+    ]);
     $texto = strtolower(trim($texto));
     $texto = preg_replace('/[^a-z0-9\s-]/', '', $texto);
     $texto = preg_replace('/[\s-]+/', '-', $texto);
-    return trim($texto, '-');
+    $texto = trim($texto, '-');
+    // Si el resultado quedó vacío (p. ej. título sin caracteres ASCII), usar uno por defecto
+    if ($texto === '') {
+        $texto = 'publicacion';
+    }
+    return $texto;
 }
 
 /**

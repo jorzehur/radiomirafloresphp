@@ -22,14 +22,6 @@ $baseMenu = $esInicio ? '' : 'index.php';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= e($nombre_sitio) ?><?= $eslogan ? ' - ' . e($eslogan) : '' ?></title>
     <meta name="description" content="<?= e($eslogan) ?>">
-
-    <!-- Headers de seguridad -->
-    <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
-    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
-    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://connect.facebook.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; frame-src 'self' https://www.facebook.com https://www.youtube.com; connect-src 'self';">
-
     <link rel="stylesheet" href="assets/css/estilos.css?v=<?= @filemtime(__DIR__ . '/../assets/css/estilos.css') ?>">
     <style>
         :root {
@@ -37,8 +29,10 @@ $baseMenu = $esInicio ? '' : 'index.php';
             --color-acento: <?= e($color_acento) ?>;
         }
     </style>
+<script>document.documentElement.className += ' con-js';</script>
 </head>
 <body>
+<a class="saltar" href="#videos">Saltar al contenido</a>
 <div id="fb-root"></div>
 
 <header class="barra-navegacion">

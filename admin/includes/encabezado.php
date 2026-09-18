@@ -2,11 +2,6 @@
 // ============================================================
 //  encabezado.php - Cabecera y menú lateral del panel admin
 // ============================================================
-if (!defined('ADMIN_PANEL')) {
-    // Solo se usa desde el admin
-    require_once __DIR__ . '/../../includes/funciones.php';
-}
-
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/admin-funciones.php';
 

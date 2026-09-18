@@ -75,6 +75,7 @@ require __DIR__ . '/includes/header.php';
 <section class="seccion seccion--gris" id="noticias">
     <div class="contenedor">
         <h2 class="seccion__titulo">Noticias</h2>
+        <p class="seccion__mas"><a href="noticias.php">Ver todas las noticias &rarr;</a></p>
         <?php if ($noticias): ?>
             <div class="noticias">
                 <?php foreach ($noticias as $noticia): ?>

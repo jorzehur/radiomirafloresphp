@@ -277,3 +277,6 @@ a { color: var(--acento); }
     .lateral nav a { border-left: 0; }
     .contenido { padding: 20px; }
 }
+
+/* Formulario POST de borrado (en linea, junto a Editar) */
+.form-borrar { display: inline; }

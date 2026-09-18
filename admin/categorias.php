@@ -11,17 +11,17 @@ $mensaje = '';
 $error = '';
 
 // --- BORRAR ---
-if (isset($_GET['borrar'])) {
-    if (!csrf_verificar($_GET['csrf_token'] ?? null)) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['borrar'])) {
+    if (!csrf_verificar($_POST['csrf_token'] ?? null)) {
         $error = 'Token inválido. No se pudo borrar.';
     } else {
-        db()->prepare('DELETE FROM categorias WHERE id = ?')->execute([(int) $_GET['borrar']]);
+        db()->prepare('DELETE FROM categorias WHERE id = ?')->execute([(int) $_POST['borrar']]);
         $mensaje = 'Categoría eliminada correctamente.';
     }
 }
 
 // --- GUARDAR ---
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['borrar'])) {
     if (!csrf_verificar($_POST['csrf_token'] ?? null)) {
         $error = 'Token inválido. Los cambios no se guardaron.';
     } else {
@@ -30,6 +30,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($nombre === '') {
             $error = 'El nombre es obligatorio.';
+        } elseif (mb_strlen($nombre) > 100) {
+            $error = 'El nombre no puede superar los 100 caracteres.';
         } else {
             $slug = slugify($nombre);
             $base = $slug;
@@ -85,7 +87,7 @@ require __DIR__ . '/includes/encabezado.php';
 
     <div class="campo">
         <label for="nombre">Nombre *</label>
-        <input type="text" id="nombre" name="nombre" required value="<?= e($editando['nombre']) ?>">
+        <input type="text" id="nombre" name="nombre" required maxlength="100" value="<?= e($editando['nombre']) ?>">
     </div>
 
     <p>
@@ -114,9 +116,11 @@ require __DIR__ . '/includes/encabezado.php';
                 <td><?= (int) $c['total'] ?></td>
                 <td>
                     <a class="boton boton--pequeno" href="categorias.php?id=<?= $c['id'] ?>">Editar</a>
-                    <a class="boton boton--pequeno boton--peligro"
-                       href="categorias.php?borrar=<?= $c['id'] ?>&csrf_token=<?= e(csrf_token()) ?>"
-                       onclick="return confirm('¿Eliminar esta categoría?');">Borrar</a>
+                    <form class="form-borrar" method="post" action="categorias.php" onsubmit="return confirm('¿Eliminar esta categoría?');">
+    <?= csrf_campo() ?>
+    <input type="hidden" name="borrar" value="<?= (int) $c['id'] ?>">
+    <button class="boton boton--pequeno boton--peligro" type="submit">Borrar</button>
+</form>
                 </td>
             </tr>
         <?php endforeach; ?>

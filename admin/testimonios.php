@@ -11,11 +11,11 @@ $mensaje = '';
 $error = '';
 
 // --- BORRAR ---
-if (isset($_GET['borrar'])) {
-    if (!csrf_verificar($_GET['csrf_token'] ?? null)) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['borrar'])) {
+    if (!csrf_verificar($_POST['csrf_token'] ?? null)) {
         $error = 'Token inválido. No se pudo borrar.';
     } else {
-        $id = (int) $_GET['borrar'];
+        $id = (int) $_POST['borrar'];
         $stmt = db()->prepare('SELECT imagen FROM testimonios WHERE id = ?');
         $stmt->execute([$id]);
         $img = $stmt->fetchColumn();
@@ -26,7 +26,7 @@ if (isset($_GET['borrar'])) {
 }
 
 // --- GUARDAR ---
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['borrar'])) {
     if (!csrf_verificar($_POST['csrf_token'] ?? null)) {
         $error = 'Token inválido. Los cambios no se guardaron.';
     } else {
@@ -38,6 +38,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($nombre === '' || $texto === '') {
             $error = 'El nombre y el texto son obligatorios.';
+        } elseif (mb_strlen($nombre) > 100) {
+            $error = 'El nombre no puede superar los 100 caracteres.';
+        } elseif (mb_strlen($cargo) > 100) {
+            $error = 'El cargo no puede superar los 100 caracteres.';
         } else {
             $imagenNueva = subir_imagen($_FILES['imagen'] ?? [], $errImg);
             if ($errImg) {
@@ -97,12 +101,12 @@ require __DIR__ . '/includes/encabezado.php';
 
     <div class="campo">
         <label for="nombre">Nombre *</label>
-        <input type="text" id="nombre" name="nombre" required value="<?= e($editando['nombre']) ?>">
+        <input type="text" id="nombre" name="nombre" required maxlength="100" value="<?= e($editando['nombre']) ?>">
     </div>
 
     <div class="campo">
         <label for="cargo">Cargo / descripción (opcional)</label>
-        <input type="text" id="cargo" name="cargo" value="<?= e($editando['cargo']) ?>">
+        <input type="text" id="cargo" name="cargo" maxlength="100" value="<?= e($editando['cargo']) ?>">
     </div>
 
     <div class="campo">
@@ -165,9 +169,11 @@ require __DIR__ . '/includes/encabezado.php';
                 <td><?= $t['activo'] ? 'Sí' : 'No' ?></td>
                 <td>
                     <a class="boton boton--pequeno" href="testimonios.php?id=<?= $t['id'] ?>">Editar</a>
-                    <a class="boton boton--pequeno boton--peligro"
-                       href="testimonios.php?borrar=<?= $t['id'] ?>&csrf_token=<?= e(csrf_token()) ?>"
-                       onclick="return confirm('¿Eliminar este testimonio?');">Borrar</a>
+                    <form class="form-borrar" method="post" action="testimonios.php" onsubmit="return confirm('¿Eliminar este testimonio?');">
+    <?= csrf_campo() ?>
+    <input type="hidden" name="borrar" value="<?= (int) $t['id'] ?>">
+    <button class="boton boton--pequeno boton--peligro" type="submit">Borrar</button>
+</form>
                 </td>
             </tr>
         <?php endforeach; ?>

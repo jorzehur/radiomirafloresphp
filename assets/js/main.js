@@ -1,5 +1,5 @@
 // ============================================================
-//  main.js - Interactividad mínima (menú móvil)
+//  main.js - Interactividad minima del menu movil
 // ============================================================
 document.addEventListener('DOMContentLoaded', function () {
     var boton = document.getElementById('menuBoton');
@@ -7,16 +7,45 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (!boton || !menu) return;
 
-    boton.addEventListener('click', function () {
-        var abierto = menu.classList.toggle('abierto');
-        boton.setAttribute('aria-expanded', abierto ? 'true' : 'false');
+    if (!boton.hasAttribute('aria-controls')) {
+        boton.setAttribute('aria-controls', 'menu');
+    }
+
+    function abrir() {
+        menu.classList.add('abierto');
+        boton.setAttribute('aria-expanded', 'true');
+        boton.setAttribute('aria-label', 'Cerrar men\u00fa');
+    }
+
+    function cerrar() {
+        menu.classList.remove('abierto');
+        boton.setAttribute('aria-expanded', 'false');
+        boton.setAttribute('aria-label', 'Abrir men\u00fa');
+    }
+
+    boton.addEventListener('click', function (evento) {
+        evento.stopPropagation();
+        if (menu.classList.contains('abierto')) { cerrar(); } else { abrir(); }
     });
 
-    // Cerrar el menú al hacer clic en un enlace
-    menu.querySelectorAll('a').forEach(function (enlace) {
-        enlace.addEventListener('click', function () {
-            menu.classList.remove('abierto');
-            boton.setAttribute('aria-expanded', 'false');
-        });
+    // Al elegir un enlace, cerrar el menu
+    var enlaces = menu.querySelectorAll('a');
+    for (var i = 0; i < enlaces.length; i++) {
+        enlaces[i].addEventListener('click', cerrar);
+    }
+
+    // Cerrar con Escape y devolver el foco al boton
+    document.addEventListener('keydown', function (evento) {
+        if ((evento.key === 'Escape' || evento.key === 'Esc') && menu.classList.contains('abierto')) {
+            cerrar();
+            boton.focus();
+        }
+    });
+
+    // Cerrar al hacer clic fuera del menu
+    document.addEventListener('click', function (evento) {
+        if (!menu.classList.contains('abierto')) return;
+        if (menu.contains(evento.target) || boton.contains(evento.target)) return;
+        cerrar();
     });
 });

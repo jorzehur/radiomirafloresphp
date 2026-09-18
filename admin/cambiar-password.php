@@ -54,8 +54,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if (!password_verify($actual, $hashActual)) {
                 $error = 'La contraseña actual es incorrecta.';
-            } elseif (strlen($nueva) < 8) {
+            } elseif (mb_strlen($nueva) < 8) {
                 $error = 'La nueva contraseña debe tener al menos 8 caracteres.';
+            } elseif (strlen($nueva) > 72) {
+                $error = 'La nueva contraseña no puede superar los 72 caracteres.';
             } elseif ($nueva !== $confirmar) {
                 $error = 'Las contraseñas no coinciden.';
             } else {
@@ -87,13 +89,13 @@ require __DIR__ . '/includes/encabezado.php';
 
     <div class="campo">
         <label for="usuario_nuevo">Nuevo nombre de usuario</label>
-        <input type="text" id="usuario_nuevo" name="usuario_nuevo" required value="<?= e($usuarioAdmin['usuario'] ?? '') ?>">
+        <input type="text" id="usuario_nuevo" name="usuario_nuevo" required maxlength="50" value="<?= e($usuarioAdmin['usuario'] ?? '') ?>">
         <p class="ayuda">Elige un nombre difícil de adivinar (evita "admin"). Solo letras, números, punto, guion o guion bajo.</p>
     </div>
 
     <div class="campo">
         <label for="usuario_password">Tu contraseña actual (para confirmar)</label>
-        <input type="password" id="usuario_password" name="password_actual" required>
+        <input type="password" id="usuario_password" name="password_actual" required maxlength="72">
     </div>
 
     <button class="boton" type="submit">Cambiar usuario</button>
@@ -107,17 +109,17 @@ require __DIR__ . '/includes/encabezado.php';
 
     <div class="campo">
         <label for="password_actual">Contraseña actual</label>
-        <input type="password" id="password_actual" name="password_actual" required>
+        <input type="password" id="password_actual" name="password_actual" required maxlength="72">
     </div>
 
     <div class="campo">
         <label for="password_nueva">Nueva contraseña (mínimo 8 caracteres)</label>
-        <input type="password" id="password_nueva" name="password_nueva" required>
+        <input type="password" id="password_nueva" name="password_nueva" required maxlength="72">
     </div>
 
     <div class="campo">
         <label for="password_confirmar">Confirmar nueva contraseña</label>
-        <input type="password" id="password_confirmar" name="password_confirmar" required>
+        <input type="password" id="password_confirmar" name="password_confirmar" required maxlength="72">
     </div>
 
     <button class="boton" type="submit">Cambiar contraseña</button>

@@ -17,7 +17,6 @@ $noticia = $stmt->fetch();
 
 if (!$noticia) {
     http_response_code(404);
-    $titulo_404 = 'Noticia no encontrada';
 }
 
 require __DIR__ . '/includes/header.php';

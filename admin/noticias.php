@@ -15,11 +15,11 @@ $error = '';
 $categorias = db()->query('SELECT id, nombre FROM categorias ORDER BY nombre')->fetchAll();
 
 // --- BORRAR ---
-if (isset($_GET['borrar'])) {
-    if (!csrf_verificar($_GET['csrf_token'] ?? null)) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['borrar'])) {
+    if (!csrf_verificar($_POST['csrf_token'] ?? null)) {
         $error = 'Token inválido. No se pudo borrar.';
     } else {
-        $id = (int) $_GET['borrar'];
+        $id = (int) $_POST['borrar'];
         // Borrar la imagen asociada antes de borrar la noticia
         $stmt = db()->prepare('SELECT imagen FROM noticias WHERE id = ?');
         $stmt->execute([$id]);
@@ -31,7 +31,7 @@ if (isset($_GET['borrar'])) {
 }
 
 // --- GUARDAR (crear o editar) ---
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['borrar'])) {
     if (!csrf_verificar($_POST['csrf_token'] ?? null)) {
         $error = 'Token inválido. Los cambios no se guardaron.';
     } else {
@@ -49,11 +49,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $url_facebook = facebook_resolver($url_facebook);
             if (facebook_post_embed($url_facebook) === '') {
                 $error = 'La URL de Facebook no es válida. Pega el enlace de la publicación.';
+            } elseif (mb_strlen($url_facebook) > 255) {
+                $error = 'La URL de Facebook es demasiado larga (máx. 255 caracteres).';
             }
         }
 
         if ($titulo === '') {
             $error = 'El título es obligatorio.';
+        } elseif (mb_strlen($titulo) > 200) {
+            $error = 'El título no puede superar los 200 caracteres.';
+        }
+
+        if ($fecha !== '') {
+            $d = DateTime::createFromFormat('Y-m-d', $fecha);
+            if (!$d || $d->format('Y-m-d') !== $fecha) {
+                $error = 'La fecha de publicación no es válida.';
+            }
         }
 
         if (!$error) {
@@ -148,7 +159,7 @@ require __DIR__ . '/includes/encabezado.php';
 
     <div class="campo">
         <label for="titulo">Título *</label>
-        <input type="text" id="titulo" name="titulo" required value="<?= e($editando['titulo']) ?>">
+        <input type="text" id="titulo" name="titulo" required maxlength="200" value="<?= e($editando['titulo']) ?>">
     </div>
 
     <div class="campo">
@@ -180,7 +191,7 @@ require __DIR__ . '/includes/encabezado.php';
 
     <div class="campo">
         <label for="url_facebook">URL de Facebook (opcional)</label>
-        <input type="url" id="url_facebook" name="url_facebook" value="<?= e($editando['url_facebook']) ?>" placeholder="https://www.facebook.com/...">
+        <input type="url" id="url_facebook" name="url_facebook" maxlength="255" value="<?= e($editando['url_facebook']) ?>" placeholder="https://www.facebook.com/...">
         <p class="ayuda">Si pegas el enlace de una publicación de Facebook, la noticia se mostrará incrustada desde Facebook (con su imagen y texto), sin necesidad de subir imagen ni escribir contenido. Acepta enlaces "compartir".</p>
     </div>
 
@@ -239,9 +250,11 @@ require __DIR__ . '/includes/encabezado.php';
                 <td><?= $n['destacada'] ? 'Sí' : 'No' ?></td>
                 <td>
                     <a class="boton boton--pequeno" href="noticias.php?id=<?= $n['id'] ?>">Editar</a>
-                    <a class="boton boton--pequeno boton--peligro"
-                       href="noticias.php?borrar=<?= $n['id'] ?>&csrf_token=<?= e(csrf_token()) ?>"
-                       onclick="return confirm('¿Eliminar esta noticia?');">Borrar</a>
+                    <form class="form-borrar" method="post" action="noticias.php" onsubmit="return confirm('¿Eliminar esta noticia?');">
+    <?= csrf_campo() ?>
+    <input type="hidden" name="borrar" value="<?= (int) $n['id'] ?>">
+    <button class="boton boton--pequeno boton--peligro" type="submit">Borrar</button>
+</form>
                 </td>
             </tr>
         <?php endforeach; ?>

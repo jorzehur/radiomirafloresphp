@@ -9,8 +9,6 @@ define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
 define('DB_NAME', getenv('DB_NAME') ?: 'radio_miraflores');
 define('DB_USER', getenv('DB_USER') ?: 'root');
 define('DB_PASS', getenv('DB_PASS') ?: '');
-// Para seguridad en producción, establecer variables de entorno:
-// DB_HOST, DB_NAME, DB_USER, DB_PASS
 
 // --- Rutas base (dejar como estan) ---
 define('BASE_URL', '');                 // '' si el sitio esta en la raiz

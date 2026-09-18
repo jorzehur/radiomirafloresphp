@@ -11,17 +11,17 @@ $mensaje = '';
 $error = '';
 
 // --- BORRAR ---
-if (isset($_GET['borrar'])) {
-    if (!csrf_verificar($_GET['csrf_token'] ?? null)) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['borrar'])) {
+    if (!csrf_verificar($_POST['csrf_token'] ?? null)) {
         $error = 'Token inválido. No se pudo borrar.';
     } else {
-        db()->prepare('DELETE FROM videos WHERE id = ?')->execute([(int) $_GET['borrar']]);
+        db()->prepare('DELETE FROM videos WHERE id = ?')->execute([(int) $_POST['borrar']]);
         $mensaje = 'Video eliminado correctamente.';
     }
 }
 
 // --- GUARDAR ---
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['borrar'])) {
     if (!csrf_verificar($_POST['csrf_token'] ?? null)) {
         $error = 'Token inválido. Los cambios no se guardaron.';
     } else {
@@ -29,25 +29,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $titulo     = trim($_POST['titulo'] ?? '');
         $url        = trim($_POST['url_video'] ?? '');
         $plataforma = ($_POST['plataforma'] ?? 'youtube') === 'facebook' ? 'facebook' : 'youtube';
-        $tipo       = $_POST['tipo'] ?? 'video';
+        $tipo       = ($_POST['tipo'] ?? 'video') === 'en_vivo' ? 'en_vivo' : 'video';
         $activo     = isset($_POST['activo']) ? 1 : 0;
         $orden      = (int) ($_POST['orden'] ?? 0);
 
-        // Validación de URL con dominios específicos
-        $url_valida = false;
+        // Para Facebook, resolver los enlaces "compartir" a la URL directa del video
         if ($plataforma === 'facebook') {
             $url = facebook_resolver($url);
-            $url_valida = validar_url($url, ['facebook.com']);
-        } elseif ($plataforma === 'youtube') {
-            $url_valida = validar_url($url, ['youtube.com', 'youtu.be']);
         }
 
         if ($titulo === '' || $url === '') {
             $error = 'El título y la URL del video son obligatorios.';
-        } elseif (!$url_valida) {
-            $error = 'La URL no es válida. Por favor usa un formato correcto:
-            - YouTube: https://youtu.be/ID o https://www.youtube.com/watch?v=ID
-            - Facebook: Enlace de video o directo';
+        } elseif (mb_strlen($titulo) > 200) {
+            $error = 'El título no puede superar los 200 caracteres.';
+        } elseif (mb_strlen($url) > 255) {
+            $error = 'La URL es demasiado larga (máx. 255 caracteres).';
         } elseif ($plataforma === 'facebook' && facebook_embed($url) === '') {
             $error = 'La URL de Facebook no es válida. Pega el enlace del video o del directo.';
         } elseif ($plataforma === 'youtube' && youtube_id($url) === null) {
@@ -99,7 +95,7 @@ require __DIR__ . '/includes/encabezado.php';
 
     <div class="campo">
         <label for="titulo">Título *</label>
-        <input type="text" id="titulo" name="titulo" required value="<?= e($editando['titulo']) ?>">
+        <input type="text" id="titulo" name="titulo" required maxlength="200" value="<?= e($editando['titulo']) ?>">
     </div>
 
     <div class="campo">
@@ -168,9 +164,11 @@ require __DIR__ . '/includes/encabezado.php';
                 <td><?= $v['activo'] ? 'Sí' : 'No' ?></td>
                 <td>
                     <a class="boton boton--pequeno" href="videos.php?id=<?= $v['id'] ?>">Editar</a>
-                    <a class="boton boton--pequeno boton--peligro"
-                       href="videos.php?borrar=<?= $v['id'] ?>&csrf_token=<?= e(csrf_token()) ?>"
-                       onclick="return confirm('¿Eliminar este video?');">Borrar</a>
+                    <form class="form-borrar" method="post" action="videos.php" onsubmit="return confirm('¿Eliminar este video?');">
+    <?= csrf_campo() ?>
+    <input type="hidden" name="borrar" value="<?= (int) $v['id'] ?>">
+    <button class="boton boton--pequeno boton--peligro" type="submit">Borrar</button>
+</form>
                 </td>
             </tr>
         <?php endforeach; ?>
